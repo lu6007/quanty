@@ -6,7 +6,7 @@ default = {'simple_tracker', 0};
 [method] = parse_parameter(parameter,default, varargin);
 
 
-fluocell_data.image_index = (str2num(image_index))';
+% fluocell_data.image_index = (str2num(image_index))';
 fluocell_data.cell_name = 'cell1';
 fluocell_data.track_index = (str2num(image_index))';
 fluocell_data.cbound = str2num(intensity_text);
