@@ -1,6 +1,6 @@
 
 
-function [trackRatio, trackSize] = tracking(fluocell_data, image_index, intensity_text, varargin)
+function [trackRatio, trackSize] = test_simple_tracker(fluocell_data, image_index, intensity_text, varargin)
 parameter = {'method', 'separation'};
 default = {'simple_tracker', 0};
 [method] = parse_parameter(parameter,default, varargin);
@@ -23,6 +23,6 @@ if strcmp(method, 'singleParticleTracking')
     % overlay_image_track(fluocell_data, frame_with_track, 'image_index', fluocell_data.image_index,'load_file', 1, 'track_index', track_index, 'sa
     [trackRatio, trackSize] = fluocell_data_rearrange_new(fluocell_data, track_with_frame, movie_info, tracksFinal, frame_with_track, 'separation', separation);
 elseif strcmp(method, 'simple_tracker')
-    [trackRatio, trackSize] = simple_tracker_test(movie_info, fluocell_data, 'plot_track', 0, 'plot_comparison', 1);
+    [trackRatio, trackSize] = simple_tracker(movie_info, fluocell_data, 'plot_track', 0, 'plot_comparison', 1);
 end
 return;

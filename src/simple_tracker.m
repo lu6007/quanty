@@ -1,6 +1,6 @@
 % Test the simple tracker for our data
 % Lexie on 04/04/2016
-function [simple_track_ratio, simple_track_size] = simple_tracker_test(movie_info, fluocell_data,varargin)
+function [simple_track_ratio, simple_track_size] = simple_tracker(movie_info, fluocell_data,varargin)
 parameter_name = {'plot_track', 'max_linking_distance', 'max_gap_closing', 'debug',...
     'separate_distance', 'separation', 'size_difference', 'plot_comparison', 'plot_tracking_result'};
 default_value = {0, 500, Inf, true, 250, 0, 0.35, 0, 0};
@@ -13,7 +13,7 @@ n_frames = length(movie_info);
 coord_data = cell(n_frames, 1);
 cell_size = cell(n_frames, 1);
 cell_ratio = cell(n_frames, 1);
-time = fluocell_data.time(1 : n_frames, 2) - fluocell_data.time(1, 2);
+% time = fluocell_data.time(1 : n_frames, 2) - fluocell_data.time(1, 2);
 
 num_tracks = 0;
 for i = 1 : n_frames
@@ -101,8 +101,7 @@ simple_track_ratio = track_cell_ratio;
 simple_track_size = track_cell_pixels;
 
 if plot_comparison
-    figure;
-    hold on
+    figure; hold on; 
     for i_track = 1 : n_tracks 
         track = adjacency_tracks{i_track};
         temp_pixel = all_cell_size(track, :);
@@ -113,7 +112,7 @@ if plot_comparison
             plot(temp_idx, track_cell_pixels(temp_idx,1), 'go', 'MarkerSize',10, 'linewidth', 2);
         end
     end
-    ylabel('Pixels');
+    ylabel('Cell Size');
     legend('Simple Tracker Result', 'Fluocell Result');
     hold off
     
@@ -129,7 +128,7 @@ if plot_comparison
         temp_idx = newTrackIdx - 1;
         plot(temp_idx, track_cell_ratio(temp_idx,1), 'go', 'MarkerSize',10, 'linewidth', 2);
     end
-    ylabel('Pixels')
+    ylabel('Intensity Ratio')
     legend('Simple Tracker Result', 'Fluocell Result');
     hold off
 end

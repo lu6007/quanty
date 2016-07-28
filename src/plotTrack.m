@@ -10,9 +10,7 @@ all_points = vertcat(coord_data{:});
 n_frames = length(coord_data);
 
 if plot_tracks
-    figure
-    clf
-    hold on
+    figure; clf; hold on;
     for i_frame = 1 : n_frames
 
         str = num2str(i_frame);
