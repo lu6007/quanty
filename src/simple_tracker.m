@@ -42,7 +42,7 @@ if separation
                 if coord_data{i}(j, :) ~= [0, 0]
                     point(j, :) = coord_data{i}(j, :);
                 end
-                if cell_ratio{i}(j, 1) == inf
+                if cell_ratio{i}(j, 1) == inf || cell_ratio{i}(j, 1) == 0, 
                     temp_coord = coord_data{newTrackIdx}(init_track_idx, :);
                     for m = 1 : size(point, 1)
                         distance(m) = pdist([temp_coord; point(m, :)]);

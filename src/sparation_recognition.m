@@ -22,7 +22,7 @@ end
 % find possible separation and where new track is created
 num_tracks = size(new_object_size, 2);
 for i = 1 : num_tracks
-    temp = find(new_object_size(:, i) == inf);
+    temp = find(new_object_size(:, i) == inf | new_object_size(:,i) == 0);
     if isempty(temp)
         continue;
     elseif temp(1) == 1 && length(temp) >= 2
