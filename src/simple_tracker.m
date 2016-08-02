@@ -122,7 +122,7 @@ if plot_comparison
         end
     end
     ylabel('Cell Size');
-    legend('Simple Tracker Result', 'Fluocell Result');
+    legend('Simple Tracker', 'No Tracker');
     hold off
     
     figure;
@@ -138,12 +138,13 @@ if plot_comparison
         plot(temp_idx, track_cell_ratio(temp_idx,1), 'go', 'MarkerSize',10, 'linewidth', 2);
     end
     ylabel('Intensity Ratio')
-    legend('Simple Tracker Result', 'Fluocell Result');
+    legend('Simple Tracker', 'No Tracker');
     hold off
 end
 
 % plot tracks
-plotTrack(num_tracks, all_points, coord_data, adjacency_tracks, 'plot_tracks', plot_tracks);
+plotTrack(num_tracks, all_points, coord_data, adjacency_tracks,...
+    'plot_tracks', plot_tracks);
 
 return;
 

@@ -1,5 +1,6 @@
+% function [trackRatio, trackSize] = test_simple_tracker(fluocell_data, image_index, intensity_text, varargin)
 
-
+% Copyright Shaoying Lu, Lexie Qin Qin 2016, shaoying.lu@gmail.com
 function [trackRatio, trackSize] = test_simple_tracker(fluocell_data, image_index, intensity_text, varargin)
 parameter = {'method', 'separation'};
 default = {'simple_tracker', 0};

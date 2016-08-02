@@ -1,6 +1,9 @@
-% function decide if there is splitting event and calculate correspond
-% paramters
+% function [separation, init_track_idx, newTrackIdx] = ...
+%     detect_separation(object_size, coord_data, varargin)
+% Detect splitting events and calculate correspond paramters
 
+% Copyright Shaoying Lu, Lexie Qin Qin 2016
+% shaoying.lu@gmail.com
 function [separation, init_track_idx, newTrackIdx] = ...
     detect_separation(object_size, coord_data, varargin)
 parameter_name = {'separate_distance', 'size_difference'};
@@ -11,7 +14,7 @@ default_value = {250, 0.35};
 % initiation sepration event to be zero
 possibleSeparation = 0;
 separation = 0;
-possibleNewTrackIdx = [];
+possibleNewTrackIdx = zeros(100, 1);
 
 new_object_size = zeros(length(object_size), length(object_size{end}));
 % pass data in object_size(cell) to a single matrix
@@ -29,13 +32,19 @@ for i = 1 : num_tracks
         continue;
     elseif temp(1) == 1 && length(temp) >= 2
         possibleSeparation = possibleSeparation + 1;
-        possibleNewTrackIdx = [possibleNewTrackIdx, temp(end) + 1];
+        possibleNewTrackIdx(possibleSeparation) =  temp(end) + 1;
     end
+    clear temp;
 end
+temp = possibleNewTrackIdx(1:possibleSeparation); 
+clear possibleNewTrackIdx;
+possibleNewTrackIdx = temp; clear temp;
 
+points_before_new_track = cell(possibleSeparation,1);
+points_new_track = cell(possibleSeparation, 1);
 if possibleSeparation
     newTrackBeforeIdx = possibleNewTrackIdx -1;
-    for i = 1 : length(possibleNewTrackIdx)
+    for i = 1 : possibleSeparation, 
         points_before_new_track{i} = coord_data{newTrackBeforeIdx(i)};
         points_new_track{i} = coord_data{possibleNewTrackIdx(i)};
     end
@@ -44,7 +53,7 @@ if possibleSeparation
     temp = [];
     for i = 1 : length(points_before_new_track)
         for j = 1 : length(points_before_new_track{i})
-            if points_before_new_track{i}(j, :) == [0, 0]
+            if ~points_before_new_track{i}(j, :), 
                 continue
             else
                 temp = [temp; points_before_new_track{i}(j, :)];
@@ -81,16 +90,20 @@ if possibleSeparation
 
     % calculate the distance and object size between before/after new track
     % initiated
-    distance = [];
-    size_diff = [];
-    for n = 1 : length(points_new_track)
-        for i = 1 : length(main_track_idx)
-            for j = 1 : length(init_track_idx)
+    NN = length(points_new_track);
+    II = length(main_track_idx);
+    JJ = length(init_track_idx);
+    distance = zeros(NN, II, JJ);
+    size_diff = zeros(NN, II, JJ);
+    for n = 1 : NN,  
+        for i = 1 : II, 
+            for j = 1 : JJ, 
                 point_1 = points_new_track{n}(init_track_idx(j), :);
                 point_2 = points_new_track{n}(main_track_idx(i), :);
                 distance(n, j, i) = pdist([point_1; point_2]);
                 size_diff(n, j, i) =abs(object_size{possibleNewTrackIdx}(init_track_idx(j)) - ...
-                    object_size{possibleNewTrackIdx}(main_track_idx(i))) /object_size{possibleNewTrackIdx}(init_track_idx(j));
+                    object_size{possibleNewTrackIdx}(main_track_idx(i))) /...
+                    object_size{possibleNewTrackIdx}(init_track_idx(j));
             end
         end    
     end
