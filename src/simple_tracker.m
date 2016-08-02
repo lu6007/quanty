@@ -1,27 +1,29 @@
 % Test the simple tracker for our data
-% Lexie on 04/04/2016
+% 
+
+% Copyright Shaoying Lu, Lexie Qin Qin 2016
 function [simple_track_ratio, simple_track_size] = simple_tracker(movie_info, fluocell_data,varargin)
 parameter_name = {'plot_track', 'max_linking_distance', 'max_gap_closing', 'debug',...
-    'separate_distance', 'separation', 'size_difference', 'plot_comparison', 'plot_tracking_result'};
-default_value = {0, 500, Inf, true, 250, 0, 0.35, 0, 0};
+    'separate_distance', 'size_difference', 'plot_comparison', 'plot_tracking_result'};
+default_value = {0, 500, Inf, true, 250, 0.35, 0, 0};
 [plot_tracks, max_linking_distance, max_gap_closing, debug, separate_distance, ...
-    separation, size_difference, plot_comparison, plot_tracking_result] = parse_parameter(...
+    size_difference, plot_comparison, plot_tracking_result] = parse_parameter(...
     parameter_name, default_value, varargin);
 
 % format the input for this simple tracker
-n_frames = length(movie_info);
-coord_data = cell(n_frames, 1);
-cell_size = cell(n_frames, 1);
-cell_ratio = cell(n_frames, 1);
-% time = fluocell_data.time(1 : n_frames, 2) - fluocell_data.time(1, 2);
+num_frames = length(movie_info);
+coord_data = cell(num_frames, 1);
+cell_size = cell(num_frames, 1);
+cell_ratio = cell(num_frames, 1);
+% time = fluocell_data.time(1 : num_frames, 2) - fluocell_data.time(1, 2);
 
 num_tracks = 0;
-for i = 1 : n_frames
-    if size(movie_info(i).xCoord, 1) > num_tracks
+for i = 1 : num_frames
+    if size(movie_info(i).xCoord, 1) > num_tracks, 
         num_tracks = size(movie_info(i).xCoord, 1);
     end
 end
-for i = 1 : n_frames
+for i = 1 : num_frames
     for j = 1 : num_tracks
         coord_data{i}(j, 1) = movie_info(i).xCoord(j);
         coord_data{i}(j, 2) = movie_info(i).yCoord(j);
@@ -30,22 +32,27 @@ for i = 1 : n_frames
     end
 end
 
-[separation, init_track_idx, newTrackIdx] = sparation_recognition(cell_size, movie_info, coord_data, ...
+[separation, init_track_idx, newTrackIdx] = detect_separation(cell_size, coord_data, ...
     'separate_distance', separate_distance, 'size_difference', size_difference);
 
 % if it is a separation case, reassign the object size and objects
 % coordinate
+point = zeros(2, 2);
+distance = zeros(2, 1);
 if separation
     for n = 1 : separation
-        for i = 1 : n_frames
+        for i = 1 : num_frames
             for j = 1 : size(movie_info(end).xCoord, 1)
-                if coord_data{i}(j, :) ~= [0, 0]
+                % if coord_data{i}(j, :) ~= [0, 0], 
+                if coord_data{i}(j, :),
                     point(j, :) = coord_data{i}(j, :);
                 end
                 if cell_ratio{i}(j, 1) == inf || cell_ratio{i}(j, 1) == 0, 
                     temp_coord = coord_data{newTrackIdx}(init_track_idx, :);
                     for m = 1 : size(point, 1)
                         distance(m) = pdist([temp_coord; point(m, :)]);
+%                         m
+%                         size(pdist([temp_coord;point(m,:)]))
                     end
                     [~, relate_track] = min(distance);
                     cell_ratio{i}(j, 1) = cell_ratio{i}(relate_track, 1);
@@ -63,26 +70,28 @@ end
     'MaxGapClosing', max_gap_closing, ...
     'Debug', debug);
 
-n_tracks = numel(tracks);
+num_tracks = numel(tracks);
 all_points = vertcat(coord_data{:});
 all_cell_size = vertcat(cell_size{:});
 all_cell_ratio = vertcat(cell_ratio{:});
+track_cell_pixel = zeros(size(cell_ratio,1),num_tracks);
+track_cell_ratio = zeros(size(track_cell_pixel));
 
-for i_track = 1 : n_tracks
+for i_track = 1 : num_tracks
     track = adjacency_tracks{i_track};
     temp_pixel = all_cell_size(track, :);
     temp_ratio= all_cell_ratio(track, :);
-    track_cell_pixels(:, i_track) = temp_pixel;
+    track_cell_pixel(:, i_track) = temp_pixel;
     track_cell_ratio(:, i_track) = temp_ratio;
 end
 
 if plot_tracking_result
     figure;
     hold on
-    plot(track_cell_pixels, 'b.-', 'linewidth', 2);
+    plot(track_cell_pixel, 'b.-', 'linewidth', 2);
     if separation
         temp_idx = newTrackIdx - 1;
-        plot(temp_idx, track_cell_pixels(temp_idx,1), 'go', 'MarkerSize',10, 'linewidth', 2);
+        plot(temp_idx, track_cell_pixel(temp_idx,1), 'go', 'MarkerSize',10, 'linewidth', 2);
     end
     ylabel('Pixels');
     legend('Simple Tracker Result');
@@ -98,18 +107,18 @@ if plot_tracking_result
 end
 
 simple_track_ratio = track_cell_ratio;
-simple_track_size = track_cell_pixels;
+simple_track_size = track_cell_pixel;
 
 if plot_comparison
     figure; hold on; 
-    for i_track = 1 : n_tracks 
+    for i_track = 1 : num_tracks 
         track = adjacency_tracks{i_track};
         temp_pixel = all_cell_size(track, :);
-        plot(track_cell_pixels(:,i_track), 'b-', 'linewidth', 2);
+        plot(track_cell_pixel(:,i_track), 'b-', 'linewidth', 2);
         plot(fluocell_data.cell_size{i_track}(1:length(temp_pixel)), 'r*-');
         if separation
             temp_idx = newTrackIdx - 1;
-            plot(temp_idx, track_cell_pixels(temp_idx,1), 'go', 'MarkerSize',10, 'linewidth', 2);
+            plot(temp_idx, track_cell_pixel(temp_idx,1), 'go', 'MarkerSize',10, 'linewidth', 2);
         end
     end
     ylabel('Cell Size');
@@ -118,7 +127,7 @@ if plot_comparison
     
     figure;
     hold on
-    for i_track = 1 : n_tracks 
+    for i_track = 1 : num_tracks 
         track = adjacency_tracks{i_track};
         temp_ratio = all_cell_ratio(track, :);
         plot(track_cell_ratio(:,i_track), 'b-', 'linewidth', 2);
@@ -134,7 +143,7 @@ if plot_comparison
 end
 
 % plot tracks
-plotTrack(n_tracks, all_points, coord_data, adjacency_tracks, 'plot_tracks', plot_tracks);
+plotTrack(num_tracks, all_points, coord_data, adjacency_tracks, 'plot_tracks', plot_tracks);
 
 return;
 

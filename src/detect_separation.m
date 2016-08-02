@@ -1,10 +1,12 @@
 % function decide if there is splitting event and calculate correspond
 % paramters
 
-function [separation, init_track_idx, newTrackIdx] = sparation_recognition(object_size, movie_info, coord_data, varargin)
+function [separation, init_track_idx, newTrackIdx] = ...
+    detect_separation(object_size, coord_data, varargin)
 parameter_name = {'separate_distance', 'size_difference'};
 default_value = {250, 0.35};
-[separate_distance, size_difference] = parse_parameter(parameter_name, default_value, varargin);
+[separate_distance, size_difference] = parse_parameter(parameter_name,...
+    default_value, varargin);
 
 % initiation sepration event to be zero
 possibleSeparation = 0;
