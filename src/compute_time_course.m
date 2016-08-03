@@ -146,7 +146,9 @@ end;
 set(gca,'FontSize',12,'FontName','Arial', 'Fontweight', 'bold')
 set(findall(gcf,'type','text'),'FontSize',12,'FontName','Arial', 'Fontweight', 'bold')
 hold on;
-plot(this_image_index, fret_ratio{1}(this_image_index, 1), 'r','LineWidth',2);
+this_fret_ratio = [fret_ratio{1}(this_image_index, 1), fret_ratio{2}(this_image_index, 1)];
+plot(this_image_index, this_fret_ratio, 'r','LineWidth',2);
+%plot(this_image_index, fret_ratio{1}(this_image_index, 1), 'r','LineWidth',2);
 title(regexprep(cell_name,'_','\\_'));
 % xlabel('Index'); ylabel('ECFP/FRET Ratio');
 % change the name of the figure 
@@ -160,11 +162,10 @@ end;
 set(gca,'FontSize',12,'FontName','Arial', 'Fontweight', 'bold')
 set(findall(gcf,'type','text'),'FontSize',12,'FontName','Arial', 'Fontweight', 'bold')
 hold on;
-% plot(time(this_image_index), fret_ratio(this_image_index, 1), 'r','LineWidth',2);
-% plot figure based on the normalized time  Lexie on 02/17/2015
-plot(time(this_image_index, 2), fret_ratio{1}(this_image_index, 1), 'r','LineWidth',2);
+plot(time(this_image_index, 2), this_fret_ratio, 'r','LineWidth',2);
 title(regexprep(cell_name,'_','\\_'));
 xlabel('Time (min)'); ylabel('Intensity Ratio');
+clear this_fret_ratio;
 %
 %%%%%%%%10/21/2014 lexie plot cell size change
 if compute_cell_size,
@@ -176,9 +177,9 @@ if compute_cell_size,
     set(gca,'FontSize',12,'FontName','Arial', 'Fontweight', 'bold')
     set(findall(gcf,'type','text'),'FontSize',12,'FontName','Arial', 'Fontweight', 'bold')
     hold on;
-    % 7/22/2016 Kathy --- correction for bug
-    % plot(this_image_index, cell_size{1, pos_temp}(this_image_index, 1), 'r', 'LineWidth', 2);
-    plot(this_image_index, cell_size{1}(this_image_index, 1), 'r', 'LineWidth', 2);
+    % plot(this_image_index, cell_size{1}(this_image_index, 1), 'r', 'LineWidth', 2);
+    this_cell_size = [cell_size{1}(this_image_index, 1), cell_size{2}(this_image_index, 1)];
+    plot(this_image_index, this_cell_size, 'r','LineWidth',2);
     title(regexprep(cell_name,'_','\\_'));
     xlabel('Index'); ylabel('Cell Size');
 end;
