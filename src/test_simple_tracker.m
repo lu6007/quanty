@@ -19,10 +19,12 @@ if strcmp(method, 'singleParticleTracking')
     frame_index = 1:length(fluocell_data.image_index);
     tracksFinal = get_track(fluocell_data, movie_info(frame_index), 'load_file', 0, 'save_file', 1); %tracksFinal contains all the FAs (~200 tracks)
     frame_with_track = get_frame_track(tracksFinal,movie_info(frame_index));
-    track_index = [1 : length(tracksFinal)];
     track_with_frame = get_track_frame(fluocell_data, tracksFinal, movie_info(frame_index));
-    % overlay_image_track(fluocell_data, frame_with_track, 'image_index', fluocell_data.image_index,'load_file', 1, 'track_index', track_index, 'sa
-    [trackRatio, trackSize] = fluocell_data_rearrange_new(fluocell_data, track_with_frame, movie_info, tracksFinal, frame_with_track, 'separation', separation);
+    % track_index = [1 : length(tracksFinal)];
+    % overlay_image_track(fluocell_data, frame_with_track, 'image_index', fluocell_data.image_index,...
+    % 'load_file', 1, 'track_index', track_index);
+    [trackRatio, trackSize] = fluocell_data_rearrange(fluocell_data, track_with_frame,...
+        movie_info, tracksFinal, frame_with_track, 'separation', separation);
 elseif strcmp(method, 'simple_tracker')
     [trackRatio, trackSize] = simple_tracker(movie_info, fluocell_data, 'plot_track', 0, 'plot_comparison', 1);
 end
