@@ -75,9 +75,11 @@ for i = 3: num_folders,
     end
    si_str = regexprep(name_i, 'p','s'); %p*->s*
    [~,file,ext] = fileparts(data.first_file);
-   temp = strcat(file, ext);
-   first_file_no_path = regexprep(temp, s1_str, si_str);
-   clear temp;
+%    temp = strcat(file, ext);
+%    first_file_no_path = regexprep(temp, s1_str, si_str);
+%    clear temp;
+   data_i.prefix = regexprep(file, s1_str, si_str);
+   first_file_no_path = strcat(data_i.prefix, ext);
    data_i.first_file = strcat(data_i.path, first_file_no_path);
 
    [~, ~, data_i] = compute_time_course(name_i, data_i, 'subplot_position', sub_i, ...

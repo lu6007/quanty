@@ -146,7 +146,12 @@ end;
 set(gca,'FontSize',12,'FontName','Arial', 'Fontweight', 'bold')
 set(findall(gcf,'type','text'),'FontSize',12,'FontName','Arial', 'Fontweight', 'bold')
 hold on;
-this_fret_ratio = [fret_ratio{1}(this_image_index, 1), fret_ratio{2}(this_image_index, 1)];
+num_objects = length(fret_ratio);
+if num_objects ==1,
+    this_fret_ratio = fret_ratio{1}(this_image_index, 1);
+else % num_objects == 2
+    this_fret_ratio = [fret_ratio{1}(this_image_index, 1), fret_ratio{2}(this_image_index, 1)];
+end;
 plot(this_image_index, this_fret_ratio, 'r','LineWidth',2);
 %plot(this_image_index, fret_ratio{1}(this_image_index, 1), 'r','LineWidth',2);
 title(regexprep(cell_name,'_','\\_'));
