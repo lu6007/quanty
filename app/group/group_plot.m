@@ -152,7 +152,7 @@ elseif method == 3,
         
         %Adding for loop to try to adapt group_plot() for multiple objects in one image -Shannon 8/12/2016
         num_objects = length(res.fret_ratio);
-        for k = 1:length(num_objects)
+        for k = 1:num_objects
             j = j+1;
 
         % read the right time for plotting, Lexie on 02/19/2015
