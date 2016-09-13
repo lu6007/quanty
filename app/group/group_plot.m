@@ -106,7 +106,7 @@ elseif method ==2, % read the time and ratio values from the excel file
     old_exp = excel_read_curve(file_name);
     exp{1} = old_exp{group_index};
     % pdgf time is saved to the last row of the first time column
-    % Need to improve the exel_read_curve function later
+    % Need to improve the excel_read_curve function later
     nnn = length(exp{1}.cell(1).time);
     tt = exp{1}.cell(1).time(nnn);
     for j = 1:length(exp{1}.cell),
@@ -138,7 +138,7 @@ elseif method == 3,
        end;
 
        % if it is a folder, load the results
-       j = j+1;
+%        j = j+1; %Commented out. Moved inside "for k = 1:length(res.fret_ratio)" a few lines below. -Shannon 8/12/2016
 
        %data_i.path = regexprep(data.path,name, name_i);
        data_i.path = regexprep(data.path,strcat('\\',name,'\\'), ...
@@ -150,15 +150,28 @@ elseif method == 3,
         end;
         res = load(result_file);
         
+        %Adding for loop to try to adapt group_plot() for multiple objects in one image -Shannon 8/12/2016
+        num_objects = length(res.fret_ratio);
+        for k = 1:num_objects
+            j = j+1;
+
         % read the right time for plotting, Lexie on 02/19/2015
 %         exp{1}.cell(j).time = res.time(res.this_image_index);
-        exp{1}.cell(j).time = res.time(res.this_image_index,2);
+            exp{1}.cell(j).time = res.time(res.this_image_index,2);
         % 02/19/2015
         
-        exp{1}.cell(j).value = res.fret_ratio{1, 1}(res.this_image_index, i_layer);
-        if compute_cell_size,
-            exp{1}.cell(j).size = res.cell_size{1, 1}(res.this_image_index);
-        end;
+        %Adapting group_plot() for multiple objects. -Shannon 8/12/2016
+            exp{1}.cell(j).value = res.fret_ratio{k}(res.this_image_index, i_layer);
+            if compute_cell_size,
+                exp{1}.cell(j).size = res.cell_size{k}(res.this_image_index);
+            end;
+%             exp{1}.cell(j).value = res.fret_ratio{1, 1}(res.this_image_index, i_layer);
+%             if compute_cell_size,
+%                 exp{1}.cell(j).size = res.cell_size{1, 1}(res.this_image_index);
+%             end;
+        % 8/12/2016
+        end
+        
         clear result_file res name_i data_i si_str;
     end; % for i 
 
