@@ -140,7 +140,7 @@ elseif method == 3,
        % if it is a folder, load the results
 %        j = j+1; %Commented out. Moved inside "for k = 1:length(res.fret_ratio)" a few lines below. -Shannon 8/12/2016
 
-       %data_i.path = regexprep(data.path,name, name_i);
+       % data_i.path = regexprep(data.path,name, name_i);
        data_i.path = regexprep(data.path,strcat('\\',name,'\\'), ...
        strcat('\\',name_i,'\\'));
        result_file = strcat(data_i.path, 'output/','result.mat');
@@ -217,7 +217,7 @@ for i = 1:num_exps,
             size_array(:, this_cell) = my_interp(this_time, this_size, time_interp);
         end;
         this_cell = this_cell+1;
-        clear this_cell_name data result_file res;
+        clear this_cell_name data result_file res this ratio;
     end;
 end;
 
@@ -231,6 +231,7 @@ for i = 1:num_exps,
     num_cells = length(exp{i}.cell);
     for j = 1:num_cells,
         norm_ratio_array(:,this_cell) = ratio_array(:,this_cell)/ratio_before(this_cell);
+        exp{i}.cell(j).norm_value = exp{i}.cell(j).value/ratio_before(this_cell);
         this_cell = this_cell+1;
     end;
 end;
@@ -247,7 +248,7 @@ end; clear intex_temp
 % Make plots of the CFP/FRET and Normalized ECFP/FRET ratios
 if enable_plot,
     % Plot the Ratio Arrays
-    my_plot(time_interp, ratio_array,'y_limit', y_limit_before_norm, ...
+    my_plot(time_interp, ratio_array, ...
         'title_str',  plot_title);
     ylabel('Intensity Ratio');
     if tag_curve,
@@ -315,16 +316,11 @@ if enable_plot,
                 norm_ratio_array(:, index_bad_position) = [];
                 ratio_array(:, index_bad_position) = [];
             end
-%             my_plot(time_interp, ratio_array,'y_limit', y_limit_before_norm, ...
-%             'title_str',  plot_title);
-%             ylabel('Intensity Ratio');
         end
-        my_plot(time_interp, ratio_array,'y_limit', y_limit_before_norm, ...
-            'title_str',  plot_title);
+        my_plot(time_interp, ratio_array, 'title_str',  plot_title);
             ylabel('Intensity Ratio');
     end; % if tag_curve
-    my_plot(time_interp, norm_ratio_array, 'y_limit', y_limit, ...
-        'title_str',  plot_title);
+    my_plot(time_interp, norm_ratio_array, 'title_str',  plot_title);
     ylabel('Normalized Intensity Ratio');
     
 end; % if enable_plot
@@ -342,34 +338,39 @@ if sum(sum(size_array))>0,
         % Plot the size arrays
         my_plot(time_interp, size_array, 'title_str',  plot_title);
         ylabel('Cell Size');
-        axis([min(time_interp) max(time_interp) 10000 200000]);
+        % axis([min(time_interp) max(time_interp) 10000 200000]);
+        axis auto;
         my_plot(time_interp, norm_size_array, 'title_str',  plot_title);
         ylabel('Normalized Cell Size');
-        axis([min(time_interp) max(time_interp) 0.5 2]);
+        % axis([min(time_interp) max(time_interp) 0.5 2]);
+        axis auto;
     end;
 end;
 
-% plot the average curve with all original data ploted as circles
+% plot the average curve with all normalized data ploted as circles
+font_size = 24;
+line_width= 3;
 if enable_average_plot,
     stop_index = find(time_interp == last_point_time);
-    mean_ratio_array = mean(ratio_array(1:stop_index, :), 2);
-    figure;
-    set(gca, 'LineWidth', 1.5,'FontWeight','bold', 'FontSize', 12);
-    set(gca,'FontSize',12,'FontName','Arial', 'Fontweight', 'bold')
-    set(findall(gcf,'type','text'),'FontSize',12,'FontName','Arial', 'Fontweight', 'bold');
+    mean_ratio_array = mean(norm_ratio_array(1:stop_index, :), 2);
+    figure('color', 'w');
+    set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
+    set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
+    set(findall(gcf,'type','text'),'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold');
     % set(gcf, 'Position', [400 400 600 450]); 
     hold on;
     for n = 1 : length(exp{1, 1}.cell)      
-        plot(exp{1, 1}.cell(n).time, exp{1, 1}.cell(n).value, 'o', 'color', [0.5 0.5 0.5]);
+        plot(exp{1, 1}.cell(n).time, exp{1, 1}.cell(n).norm_value, 'o', 'color', [0.5 0.5 0.5]);
+        % plot(time_interp, norm_ratio_array, 'o', 'color', [0.5 0.5 0.5]);
     end 
     % add the error bar
-    plot(time_interp(1 : stop_index), mean_ratio_array, 'k', 'linewidth', 2);
-    std_error = std(ratio_array,0,2) / sqrt(size(ratio_array, 2));
-    add_error_bar(time_interp, mean(ratio_array, 2), std_error, 'error_bar_interval', error_bar_interval);
+    plot(time_interp(1 : stop_index), mean_ratio_array, 'k', 'LineWidth', line_width);
+    std_error = std(norm_ratio_array,0,2) / sqrt(size(norm_ratio_array, 2));
+    add_error_bar(time_interp, mean(norm_ratio_array, 2), std_error, 'error_bar_interval', error_bar_interval);
     ylabel('Intensity Ratio');
     xlabel('Time (min)'); 
-    title('Distribution Plot');
-    axis([t_limit, y_limit_before_norm]);
+    title('Average Plot with Single Cell Data'); axis auto;
+    % axis([t_limit, y_limit_before_norm]);
 end % plot the average curve with all original data ploted as circles
 
 
@@ -403,19 +404,19 @@ if save_excel_file,
     else
         xlswrite(file_name1, time_ratio1);
     end;
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%end
-%%%%%10/21/2014 Lexie output the excel file of cell size
-if compute_cell_size,
-    time_size = [time_interp norm_size_array];
-    file_name = strcat(group.data.path,'../../','cell-size');
-    if ~isempty(sheet_name),
-        xlswrite(file_name, time_size, sheet_name);
-    else
-        xlswrite(file_name, time_size);
-    end
-end;
+    % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%end
+    %%%%%10/21/2014 Lexie output the excel file of cell size
+    if compute_cell_size,
+        time_size = [time_interp norm_size_array];
+        file_name = strcat(group.data.path,'../../','cell-size');
+        if ~isempty(sheet_name),
+            xlswrite(file_name, time_size, sheet_name);
+        else
+            xlswrite(file_name, time_size);
+        end
+    end;
 
-end
+end % if save_exel_file
 return;
 
 % Calculate Interpolation
@@ -428,6 +429,7 @@ this_time = x;
 time_interp = x_interp;
 this_ratio = y;
 nn = length(time_interp);
+smooth_span = 40;
 
 if min(this_time)>time_interp(1),
     temp = [time_interp(1); this_time]; clear this_time;
@@ -457,6 +459,9 @@ if ~sum(double(index_0)),
 end;
 
 y_interp = interp1(this_time, this_ratio,time_interp,'pchip');
+y_before = smooth(y_interp(time_interp<=0), smooth_span);
+y_after = smooth(y_interp(time_interp>0), smooth_span); clear y_interp;
+y_interp = [y_before; y_after];
 
 % figure; plot(this_time, this_ratio, '+'); hold on; plot(time_interp, y_interp);
 
@@ -465,21 +470,17 @@ return;
 
 % Plot the Ratio Array
 function my_plot(x, y, varargin)
-
-parameter_name = {'x_limit', 'y_limit','title_str'};
-default_value ={[min(x) max(x)], [0.8 3],''};
-[x_limit, y_limit, title_str] = parse_parameter(parameter_name, default_value, varargin);
-    xy_limit = [x_limit y_limit];
+    parameter_name = {'title_str'};
+    default_value ={''};
+    title_str = parse_parameter(parameter_name, default_value, varargin);
+    
+    font_size = 24;
     figure('color', 'w'); hold on;
-    set(gca, 'LineWidth', 1.5,'FontWeight','bold', 'FontSize', 12);
-    set(gca,'FontSize',12,'FontName','Arial', 'Fontweight', 'bold')
-    set(findall(gcf,'type','text'),'FontSize',12,'FontName','Arial', 'Fontweight', 'bold');
+    set(gca, 'LineWidth', 1.5,'FontWeight','bold', 'FontSize', font_size);
+    set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
+    set(findall(gcf,'type','text'),'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold');
     % set(gcf, 'Position', [400 400 600 450]); 
     plot(x, y, 'LineWidth',1.5);
     title(regexprep(title_str,'_','\\_'));
-    xlabel('Time (min)'); 
-    %ylabel('ECFP/FRET Ratio');
-   axis(xy_limit);    
-   % 06/25/2014 Lexie
-   % axis([min(min(x))-0.05 max(max(x)) min(min(y))-0.05 max(max(y))*1.3]);
+    xlabel('Time (min)');
 return;

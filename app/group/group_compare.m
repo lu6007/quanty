@@ -19,7 +19,10 @@ default_value = {'result.xls', 5, 't-test', '', '', 0, 0, 0};
 [excel_file, error_bar_interval, statistics, time_range, group_name, ...
     enable_box_plot, enable_violin_plot, load_file] = parse_parameter...
     (parameter_name, default_value, varargin);
-excel_file = strcat(group.data.path, '../../',excel_file);
+% Correct the problem in the program
+% excel_file = strcat(group.data.path, '../../',excel_file);
+ll = length(group.data.path);
+excel_file = strcat(group.data.path(1:ll-3), '../', excel_file);
 DeleteEmptyExcelSheets(excel_file);
 
 [~, ~, xls_str] = fileparts(excel_file);
@@ -65,7 +68,7 @@ figure('color','w'); hold on;
 set(gca, 'FontSize', 12, 'FontWeight', 'bold','Box', 'off', 'LineWidth',2); 
 xlabel('Time (min)'); ylabel('Normalized Mean Ratio');
 
-color = {'r', 'b', 'k','g', 'm', 'c', 'y'};
+color = {'k', 'b', 'r','g', 'm', 'c', 'y'};
 colorbase = [0.8 0.5 0.2];
 q = 8;
     for j = 1 : 2,

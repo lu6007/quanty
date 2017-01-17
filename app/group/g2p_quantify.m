@@ -23,40 +23,38 @@ default_value = {1, '', 1, 0, 1, 0};
     save_file, load_file, num_layers, compute_cell_size] = ...
     parse_parameter(parameter_name, default_value, varargin);
 name = group.name;
-data = group.data;
-% Kathy: double check here - 2/7/2015
-group.data.show_figure = show_figure;
-data.show_figure = show_figure;
+group.data.show_figure = show_figure; 
 group.data.num_layers = num_layers;
+data = group.data;
 % group.data.save_processed_image = 1;
 %
 sub_i = 1;
 
 % Choose between quantify for 1 location and multiple locations. 
-if isempty(name_i),
+if isempty(name_i)
     % Loop through the subfolders and
     % start automated processing
     list = dir(strcat(data.path,'../'));
     % ignore the 1st and 2nd folders which are './' and '../'
-    num_folders = length(list);
+    num_folder = length(list);
 else
     % put name_i into the correct location
     list(3).name = name_i;
     list(3).isdir = 1;
-    num_folders = 3;
+    num_folder = 3;
 end;
 
 % Lexie on 04/08/2015
-% group.data.num_pos = num_folders - 4;
+% group.data.num_pos = num_folder - 4;
 
 s1_str = regexprep(name,'p','s'); % p1-> s1
-for i = 3: num_folders,
+for i = 3: num_folder
     % ignore all the files
-    if ~list(i).isdir, 
+    if ~list(i).isdir
         continue;
     end;
    % ingore the output folder
-   if strcmp(list(i).name, 'output'), 
+   if strcmp(list(i).name, 'output') 
        continue;
    end;
 
@@ -70,7 +68,7 @@ for i = 3: num_folders,
 % generate output folder if there is no output folder, copy from the old 
 % g2p_quantify Lexie 2/17/2015
     output_path = strcat(data_i.path, 'output/');
-    if ~exist(output_path, 'dir'),
+    if ~exist(output_path, 'dir')
         mkdir(output_path);
     end
    si_str = regexprep(name_i, 'p','s'); %p*->s*
@@ -82,7 +80,7 @@ for i = 3: num_folders,
    first_file_no_path = strcat(data_i.prefix, ext);
    data_i.first_file = strcat(data_i.path, first_file_no_path);
 
-   [~, ~, data_i] = compute_time_course(name_i, data_i, 'subplot_position', sub_i, ...
+   [~, ~, ~] = compute_time_course(name_i, data_i, 'subplot_position', sub_i, ...
        'save_file', save_file, 'load_file', load_file, 'compute_cell_size', ...
        compute_cell_size);
    %

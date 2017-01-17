@@ -17,16 +17,34 @@ name = group.name;
 data = group.data;
 
 list = dir([data.path, '../']);
-num_folders = length(list);
+n_list = length(list);
+% Count the number of folders. 
+% Ignore the first two folders, which are '.' and '..'.
+% Also ignore the folder 'output/' and files. 
+num_folder = n_list-2;
+for i = 3:n_list
+    if ~list(i).isdir
+        num_folder = num_folder-1;
+    elseif strcmp(list(i).name, 'output')
+        num_folder = num_folder-1;
+    end;
+end;
+
 
 s1_str = regexprep(name,'p','s');
-num_row = ceil((num_folders - 4) / num_col);
+if num_folder < num_col
+    num_row = 1;
+    num_col = num_folder;
+else
+    num_row = ceil(num_folder / num_col);
+end;
 ratio_bd_str = ['[', num2str(data.ratio_bound(1)),', '  num2str(data.ratio_bound(2)), ']'];
 num_fig = length(findobj('type', 'figure'));
 for n = 1 : length(time_point)
-    figure(num_fig + n)
-    fig_ha = tight_subplot(num_row, num_col, [.005 .005],[.01 .05], 0);
-    for i = 3 : num_folders
+    h = figure(num_fig + n);
+    set(h, 'color', 'w');
+    fig_ha = tight_subplot(num_row, num_col, [.005 .005],[.01 .1], 0);
+    for i = 3 : n_list
         if ~list(i).isdir
             continue;
         end
@@ -48,12 +66,12 @@ for n = 1 : length(time_point)
         % Dispaly the ratio figure of each position at the time point given by
         % user
         output_path = [data_i.path, 'output/'];
-        if isfield(data_i, 'output_path'),
+        if isfield(data_i, 'output_path')
             data_i.output_path = output_path;
         end
         out_file = strcat(output_path, 'result.mat');
         data_i.show_figure = 1; 
-        % Load the exsiting data.m
+        % Load the exsiting data 
         res = load(out_file);
         time = res.time;
         real_time = time(:, 2) - time(1, 2);
@@ -68,14 +86,19 @@ for n = 1 : length(time_point)
                 'ratio_bound', data_i.ratio_bound, 'intensity_bound', data_i.intensity_bound);
 %         subplot(nRow, 5, i - 4), imshow(ratio_im);
         axes(fig_ha(i - 4));
-        ratio_fig = insertText(ratio_im, [20, 20], name_i, 'Boxcolor', 'Black', 'TextColor', 'white', 'FontSize', 48);
+        ratio_fig = insertText(ratio_im, [20, 20], name_i, 'Boxcolor', 'Black',...
+            'TextColor', 'white', 'FontSize', 48);
         imshow(ratio_fig);
-        clear name_i data_i si_str output_path real_time ratio ratio_im first_channel_im second_channel_im;
+        clear name_i data_i si_str output_path real_time ratio ratio_im;
+        clear first_channel_im second_channel_im;
     end
-        annotation(figure(num_fig + n), 'textbox', [.35 .9 .1 .1], 'String',{[num2str(time_point(n)), ' min colorbar ',...
-            ratio_bd_str]}, 'FitBoxToText','off', 'LineStyle','none');
-        set(gca,'FontSize', 9, 'FontName','Arial', 'Fontweight', 'bold');
-        set(findall(gcf,'type','text'),'FontSize', 12,'FontName','Arial', 'Fontweight', 'bold');
+    
+    % Draw a title across all subplot, but not just only one subplot.
+    title_string = strcat(num2str(time_point(n)), 'min, ratio bound=', ratio_bd_str); 
+    set(gcf,'NextPlot','add'); axes;
+    tt = title(title_string);
+    set(gca,'Visible','off'); set(tt,'Visible','on');
+    set(findall(gcf,'type','text'),'FontSize', 12,'FontName','Arial', 'Fontweight', 'bold');
 end
 return;
 
