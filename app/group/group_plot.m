@@ -54,26 +54,25 @@ default_value = {0, 1, 1, 1, 1, ...
 % lexie 10032014
 
 %time_interp = [-20:2:0,0:1:10,10:2:160]';
-if method ==1 || method ==3,
+if method ==1 || method ==3 
     group_name = group.name;
-    % ?? group name??
     display(sprintf('Group Name : %s',group_name));
-elseif method ==2 || method == 4, 
+elseif method ==2 || method == 4 
     file_name = group.file;
     group_index = group.index;
 end;
 
 result_file = strcat(group.data.path,'output/', 'result.mat');
-if method == 1, % load result.mat
+if method == 1 % load result.mat
     % exp = init_group(group_name);
     res = load(result_file);
     exp = res.exp; clear res;
     num_exps = length(exp);
 
-    if update_result, % default = 0
-        for i = 1:num_exps,
+    if update_result % default = 0
+        for i = 1:num_exps
             num_cells = length(exp{i}.cell_name);
-            for j = 1:num_cells,
+            for j = 1:num_cells
                 this_cell_name = exp{i}.cell_name{j};
                  data = init_data(this_cell_name);
                  % result_file = strcat(data.path, 'output/', 'result.mat');
@@ -85,10 +84,10 @@ if method == 1, % load result.mat
     
     % load the time and ratio values from result.mat file
     % load the area variable if it exists
-    for i = 1:num_exps,
+    for i = 1:num_exps
         num_cells = length(exp{i}.cell_name);
         %exp{i}.cell = cell(num_cells, 1);
-        for j = 1:num_cells,
+        for j = 1:num_cells
             this_cell_name = exp{i}.cell_name{j};
             data = init_data(this_cell_name);
             result_file = strcat(data.path, 'output/','result.mat');
@@ -101,7 +100,7 @@ if method == 1, % load result.mat
             clear cell_name data result_file res;
         end;
     end;
-elseif method ==2, % read the time and ratio values from the excel file
+elseif method ==2 % read the time and ratio values from the excel file
     num_exps = 1;
     old_exp = excel_read_curve(file_name);
     exp{1} = old_exp{group_index};
@@ -114,14 +113,14 @@ elseif method ==2, % read the time and ratio values from the excel file
     end;
     group_name = exp{1}.name;
      
-elseif method == 3, 
+elseif method == 3 
     % loop through the subfolders and automatically 
     % process the data. 
     data = group.data;
     name = group.name;
     % Loop through the subfolders 
-    list = dir(strcat(data.path,'..\'));
-    % ignore the 1st and 2nd folders which are '.\' and '..\'
+    list = dir(strcat(data.path,'../'));
+    % ignore the 1st and 2nd folders which are './' and '../'
     num_folders = length(list);
     num_exps =1;
     exp = cell(num_exps, 1);
@@ -137,14 +136,9 @@ elseif method == 3,
            continue;
        end;
 
-       % if it is a folder, load the results
-%        j = j+1; %Commented out. Moved inside "for k = 1:length(res.fret_ratio)" a few lines below. -Shannon 8/12/2016
-
-       % data_i.path = regexprep(data.path,name, name_i);
-       data_i.path = regexprep(data.path,strcat('\\',name,'\\'), ...
-       strcat('\\',name_i,'\\'));
+       data_i.path = set_path_i(data.path, name, name_i); 
        result_file = strcat(data_i.path, 'output/','result.mat');
-        if update_result,
+        if update_result
             delete(result_file);
             compute_time_course(name_i, data_i);
         end;
@@ -162,7 +156,7 @@ elseif method == 3,
         
         %Adapting group_plot() for multiple objects. -Shannon 8/12/2016
             exp{1}.cell(j).value = res.fret_ratio{k}(res.this_image_index, i_layer);
-            if compute_cell_size,
+            if compute_cell_size
                 exp{1}.cell(j).size = res.cell_size{k}(res.this_image_index);
             end;
 %             exp{1}.cell(j).value = res.fret_ratio{1, 1}(res.this_image_index, i_layer);
@@ -246,12 +240,12 @@ end; clear intex_temp
     
 
 % Make plots of the CFP/FRET and Normalized ECFP/FRET ratios
-if enable_plot,
+if enable_plot
     % Plot the Ratio Arrays
     my_plot(time_interp, ratio_array, ...
         'title_str',  plot_title);
     ylabel('Intensity Ratio');
-    if tag_curve,
+    if tag_curve
         str = {'Please choose the curves that need to be removed',...
             'Click the red circle on time axis to finish the process'};
         title(str); clear str;
@@ -326,7 +320,7 @@ if enable_plot,
 end; % if enable_plot
 
 % Normalize cell size
-if sum(sum(size_array))>0,
+if sum(sum(size_array))>0
     norm_size_array = zeros(size(size_array));
     this_cell = 1;
     size_before = (mean(size_array(before_index, :)))';
@@ -350,7 +344,7 @@ end;
 % plot the average curve with all normalized data ploted as circles
 font_size = 24;
 line_width= 3;
-if enable_average_plot,
+if enable_average_plot
     stop_index = find(time_interp == last_point_time);
     mean_ratio_array = mean(norm_ratio_array(1:stop_index, :), 2);
     figure('color', 'w');
@@ -387,10 +381,10 @@ end % plot the average curve with all original data ploted as circles
 % %%%%%%%%%%%%%%%%%end%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% export to excel files
-if save_excel_file,
+if save_excel_file
     time_ratio = [time_interp norm_ratio_array];
     file_name = strcat(group.data.path,'../../', 'result');
-    if ~isempty(sheet_name),
+    if ~isempty(sheet_name)
         xlswrite(file_name, time_ratio, sheet_name);
     else
         xlswrite(file_name, time_ratio);
@@ -406,7 +400,7 @@ if save_excel_file,
     end;
     % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%end
     %%%%%10/21/2014 Lexie output the excel file of cell size
-    if compute_cell_size,
+    if compute_cell_size
         time_size = [time_interp norm_size_array];
         file_name = strcat(group.data.path,'../../','cell-size');
         if ~isempty(sheet_name),
@@ -431,13 +425,13 @@ this_ratio = y;
 nn = length(time_interp);
 smooth_span = 40;
 
-if min(this_time)>time_interp(1),
+if min(this_time)>time_interp(1)
     temp = [time_interp(1); this_time]; clear this_time;
     this_time = temp; clear temp;
     temp = [this_ratio(1,:); this_ratio]; clear this_ratio;
     this_ratio = temp; clear temp;
 end;
-if max(this_time)<time_interp(nn),
+if max(this_time)<time_interp(nn)
     temp = [this_time; time_interp(nn)]; clear this_time;
     this_time = temp; clear temp;
     temp = [this_ratio; this_ratio(length(this_ratio), :)]; clear this_ratio;
@@ -451,7 +445,7 @@ index_after = (this_time>0 & this_time<=time_interp(nn));
 average_basal = mean(this_ratio(index_before));
 % if 0 is not in the array this_time,
 % add 0 into the time course
-if ~sum(double(index_0)), 
+if ~sum(double(index_0))
     temp = [this_time(index_before); 0; this_time(index_after)]; clear this_time;
     this_time = temp; clear temp;
     temp = [this_ratio(index_before); average_basal; this_ratio(index_after)]; clear this_ratio;

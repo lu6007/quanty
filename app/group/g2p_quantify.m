@@ -1,7 +1,7 @@
 % function g2p_quantify( group, varargin )
 % Quantify the time course of imaging data at multiple positions
 % parameter_name = {'show_figure','name_i', ...
-%     'save_file', 'load_file', 'num_layers','compute_cell_size'};
+%     'save_file', 'load_file', 'num_layer','compute_cell_size'};
 % default_value = {1, '', 1, 0, 1, 0};
 %
 % Example:
@@ -17,14 +17,14 @@
 
 function g2p_quantify( group, varargin )
 parameter_name = {'show_figure','name_i', ...
-    'save_file', 'load_file', 'num_layers','compute_cell_size'};
+    'save_file', 'load_file', 'num_layer','compute_cell_size'};
 default_value = {1, '', 1, 0, 1, 0};
 [show_figure, name_i, ...
-    save_file, load_file, num_layers, compute_cell_size] = ...
+    save_file, load_file, num_layer, compute_cell_size] = ...
     parse_parameter(parameter_name, default_value, varargin);
 name = group.name;
 group.data.show_figure = show_figure; 
-group.data.num_layers = num_layers;
+group.data.num_layer = num_layer;
 data = group.data;
 % group.data.save_processed_image = 1;
 %
@@ -61,9 +61,7 @@ for i = 3: num_folder
    % if it is a folder, perform quantification
    name_i =list(i).name;
    data_i = data;
-   %data_i.path = regexprep(data.path,name, name_i);
-   data_i.path = regexprep(data.path,strcat('\\',name,'\\'), ...
-   strcat('\\',name_i,'\\'));
+   data_i.path = set_path_i(data.path, name, name_i);
 
 % generate output folder if there is no output folder, copy from the old 
 % g2p_quantify Lexie 2/17/2015

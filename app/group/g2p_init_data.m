@@ -31,13 +31,13 @@ group.name = 'p1';
 %
 % if group_data is empty, change the path to output and load fluocell_data;
 %
-if isempty(group_data), 
+if isempty(group_data) 
     p = fluocell_data.path;
     output_file = strcat(p, '../output/data.mat');
 else
     output_file = strcat(group_data.path, '../output/data.mat');
 end;
-if ~exist(fileparts(output_file), 'dir'),
+if ~exist(fileparts(output_file), 'dir')
     mkdir(fileparts(output_file));
 end;
 
@@ -48,10 +48,10 @@ end;
 if ~isempty(group_data),
     data = group_data;
     
-    if ~isfield(data, 'pdgf_between_frame'),
+    if ~isfield(data, 'pdgf_between_frame')
         pp = data.path;
         temp = data.first_cfp_file;
-    elseif length(data.pdgf_between_frame)==2, % there is data.pdgf_between_frame
+    elseif length(data.pdgf_between_frame)==2 % there is data.pdgf_between_frame
         % calculate the pdgf_time
         % find the cfp file at cycle between_pdgf_frame(2) and position 1
         % extract the time info when the file was first saved
@@ -60,7 +60,7 @@ if ~isempty(group_data),
         ii_str = sprintf(data.index_pattern{2}, ii);
         temp = regexprep(data.first_file, data.index_pattern{1}, ii_str);
         pp = data.path;
-    elseif length(data.pdgf_between_frame)==4, % backward compatible with only 2 input
+    elseif length(data.pdgf_between_frame)==4 % backward compatible with only 2 input
         % from pdgf_between_frame.
         
         % modify file name
@@ -84,7 +84,7 @@ if ~isempty(group_data),
     display(sprintf('pdgf time = %f sec', data.pdgf_time));
     display('g2p_init_data: Update group.data from input group_data. ');
 
-    if save_data,
+    if save_data
         display('g2p_init_data: Update data file from input group_data.');
         save(output_file,'data');
     end;

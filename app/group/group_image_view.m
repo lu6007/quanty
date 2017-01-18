@@ -54,7 +54,7 @@ for n = 1 : length(time_point)
 
         name_i = list(i).name;
         data_i = data;
-        data_i.path = regexprep(data.path, ['\\', name, '\\'], ['\\', name_i, '\\']);
+        data_i.path = set_path_i(data.path, name, name_i);
 
         si_str = regexprep(name_i, 'p','s');
         [~,file,ext] = fileparts(data.first_file);
