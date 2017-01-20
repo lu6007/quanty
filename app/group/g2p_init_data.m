@@ -41,11 +41,10 @@ if ~exist(fileparts(output_file), 'dir')
     mkdir(fileparts(output_file));
 end;
 
-
 % if there is group_data, load group_data
 % if there is no group_data and there is data file, load file
 % if there no group_data or data file, load from fluocell_data
-if ~isempty(group_data),
+if ~isempty(group_data)
     data = group_data;
     
     if ~isfield(data, 'pdgf_between_frame')
@@ -74,41 +73,41 @@ if ~isempty(group_data),
             strcat('\\',jj_p,'\\')); clear pp;
         pp = temp_pp; clear temp_pp;
     else
-        display('Warning: g2p_init_data - Problem with pdgf_between_frame');
+        disp('Warning: g2p_init_data - Problem with pdgf_between_frame');
     end;
     
     %
     cfp_file = strcat(pp, temp); clear temp;
     
     data.pdgf_time = get_time_2(cfp_file)+ pdgf_time_shift;
-    display(sprintf('pdgf time = %f sec', data.pdgf_time));
-    display('g2p_init_data: Update group.data from input group_data. ');
+    disp(sprintf('pdgf time = %f sec', data.pdgf_time));
+    disp('g2p_init_data: Update group.data from input group_data. ');
 
     if save_data
-        display('g2p_init_data: Update data file from input group_data.');
+        disp('g2p_init_data: Update data file from input group_data.');
         save(output_file,'data');
     end;
-elseif exist(output_file, 'file') && load_file, % group_data is empty
-    display('g2p_init_data: Update from the data file since there is no input of group data. ');
+elseif exist(output_file, 'file') && load_file % group_data is empty
+    disp('g2p_init_data: Update from the data file since there is no input of group data. ');
     res = load(output_file);
     data = res.data;
     % make the old and new format compatible, index --> image_index
-    if isfield(data,'index')&&~isfield(data,'image_index'),
-        if size(data.index,1)>1, % transpose row vectors
+    if isfield(data,'index')&&~isfield(data,'image_index')
+        if size(data.index,1)>1 % transpose row vectors
             data.image_index = data.index';
         else % copy column vectors
             data.image_index = data.index;
         end;
         data = rmfield(data,'index');
         data.index = fluocell_data.index;
-    elseif ~isfield(data, 'index'),
+    elseif ~isfield(data, 'index')
         data.index = fluocell_data.index;
     end;
-    if isfield(data,'cfp_channel'),
+    if isfield(data,'cfp_channel')
         data = rmfield(data,'cfp_channel');
         data = rmfield(data,'yfp_channel');
     end;
-    if isfield(data,'first_cfp_file')&&~isfield(data,'first_file'),
+    if isfield(data,'first_cfp_file')&&~isfield(data,'first_file')
         data.first_file = strcat(data.path,data.first_cfp_file);
         data = rmfield(data,'first_cfp_file');
     end;
@@ -121,25 +120,25 @@ elseif exist(output_file, 'file') && load_file, % group_data is empty
         clear name ext;
     end
     % Lexie on 05/05/2015
-    if ~isfield(data,'output_path'),
+    if ~isfield(data,'output_path')
         data.output_path = fluocell_data.output_path;
     end;
-    if ~isfield(data,'quantify_roi') || data.quantify_roi == 0,
+    if ~isfield(data,'quantify_roi') || data.quantify_roi == 0
         data.quantify_roi = 3;
         data.num_layers = 3;
     end;
     
-elseif exist(strcat(fileparts(output_file),'/../p1/output/data.mat'), 'file'),
+elseif exist(strcat(fileparts(output_file),'/../p1/output/data.mat'), 'file')
     % For backward compatibility 09/09/2014
-    display('g2p_init_data: Update from the data file since there is no input of group data. ');
-    display('Backward compatible: move data from p1/output/ to output/ ');
+    disp('g2p_init_data: Update from the data file since there is no input of group data. ');
+    disp('Backward compatible: move data from p1/output/ to output/ ');
     temp = strcat(fileparts(output_file),'/../p1/output/data.mat');
     res = load(temp);
     data = res.data;
     movefile(temp, output_file);
 else % ~exist(output_file, 'file') && isemty(group_data) && load_file = 0;
-    display('g2p_init_data: Update from fluocell_data since there is no input of group data or the data file. ');
-    display('g2p_init_data: Please make sure that fluocell is reading images from the p1 position.');
+    disp('g2p_init_data: Update from fluocell_data since there is no input of group data or the data file. ');
+    disp('g2p_init_data: Please make sure that fluocell is reading images from the p1 position.');
     data.num_layers  = 1;
     data.pdgf_between_frame = fluocell_data.pdgf_between_frame; 
     data.yfp_cbound = [];
@@ -147,7 +146,7 @@ else % ~exist(output_file, 'file') && isemty(group_data) && load_file = 0;
     
     % delete some data which will cause problems in the quantification
     % stop reading bg_bw info from the first file, Lexie on 2/17/2015
-    if isfield(data, 'bg_poly'),
+    if isfield(data, 'bg_poly')
         temp = rmfield(data,'bg_poly'); clear data;
         data = rmfield(temp, 'bg_bw'); clear temp;
     end
@@ -161,7 +160,7 @@ else % ~exist(output_file, 'file') && isemty(group_data) && load_file = 0;
     temp = regexprep(data.first_file, data.index_pattern{1}, ii_str);
     pp = data.path;
     %
-    if length(data.pdgf_between_frame)>=4, % backward compatible with only 2 input
+    if length(data.pdgf_between_frame)>=4 % backward compatible with only 2 input
         % from pdgf_between_frame.
         
         % modify file name
@@ -182,12 +181,11 @@ else % ~exist(output_file, 'file') && isemty(group_data) && load_file = 0;
     data.pdgf_time = get_time_2(cfp_file) + pdgf_time_shift;
     display(sprintf('pdgf time = %f sec', data.pdgf_time));
     % save data
-    if save_data,
+    if save_data
         save(output_file, 'data');
     end;
 end; % if ~isempty(group_data),
 group.data = data;
-
 
 return
 

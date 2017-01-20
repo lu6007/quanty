@@ -8,7 +8,6 @@
 % Email: shaoying.lu@gmail.com
 
 function [time, value, data] = compute_time_course(cell_name, data, varargin)
-
 display(strcat('Cell Name : ',cell_name));
 parameter_name = {'save_file', 'load_file', 'subplot_position', 'compute_cell_size'};
 default_value = {1, 1, 0, 0};

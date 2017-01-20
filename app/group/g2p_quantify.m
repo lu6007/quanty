@@ -63,17 +63,13 @@ for i = 3: num_folder
    data_i = data;
    data_i.path = set_path_i(data.path, name, name_i);
 
-% generate output folder if there is no output folder, copy from the old 
-% g2p_quantify Lexie 2/17/2015
+% Create the output folder if needed
     output_path = strcat(data_i.path, 'output/');
     if ~exist(output_path, 'dir')
         mkdir(output_path);
     end
    si_str = regexprep(name_i, 'p','s'); %p*->s*
    [~,file,ext] = fileparts(data.first_file);
-%    temp = strcat(file, ext);
-%    first_file_no_path = regexprep(temp, s1_str, si_str);
-%    clear temp;
    data_i.prefix = regexprep(file, s1_str, si_str);
    first_file_no_path = strcat(data_i.prefix, ext);
    data_i.first_file = strcat(data_i.path, first_file_no_path);

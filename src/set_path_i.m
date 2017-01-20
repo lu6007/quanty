@@ -9,5 +9,6 @@
 % 
 function path_i = set_path_i( pa, name, name_i )
     path_i = regexprep(pa, ['\/', name, '\/'], ['\/', name_i, '\/']); 
+    path_i = regexprep(pa, ['\\', name, '\\'], ['\\', name_i, '\\']);
 end
 
