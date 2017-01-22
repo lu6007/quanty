@@ -49,7 +49,7 @@ end;
 
 s1_str = regexprep(name,'p','s'); % p1-> s1
 for i = 3: num_folder
-    % ignore all the files
+    % ignore ./ ../ and all the files
     if ~list(i).isdir
         continue;
     end;

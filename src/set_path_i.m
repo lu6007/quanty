@@ -8,7 +8,7 @@
 % Replace the folder name '/p1/' with '/p2/'.
 % 
 function path_i = set_path_i( pa, name, name_i )
-    path_i = regexprep(pa, ['\/', name, '\/'], ['\/', name_i, '\/']); 
-    path_i = regexprep(pa, ['\\', name, '\\'], ['\\', name_i, '\\']);
+    temp = regexprep(pa, ['\/', name, '\/'], ['\/', name_i, '\/']); 
+    path_i = regexprep(temp, ['\\', name, '\\'], ['\\', name_i, '\\']);
 end
 

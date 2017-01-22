@@ -8,7 +8,7 @@
 % Email: shaoying.lu@gmail.com
 
 function [time, value, data] = compute_time_course(cell_name, data, varargin)
-display(strcat('Cell Name : ',cell_name));
+fprintf('Cell Name : %s\n',cell_name);
 parameter_name = {'save_file', 'load_file', 'subplot_position', 'compute_cell_size'};
 default_value = {1, 1, 0, 0};
 [save_file, load_file, subplot_position, compute_cell_size] =...
@@ -51,7 +51,6 @@ if ~exist(out_file,'file') || load_file ==0
     ii = (time > -1);
     temp = this_image_index(ii); clear this_image_index;
     this_image_index = temp; clear temp;
-    % 2/19/2015
     
     if compute_cell_size
         cell_size = data.cell_size;
@@ -64,11 +63,13 @@ if ~exist(out_file,'file') || load_file ==0
         after_pdgf = data.pdgf_between_frame(2);
         %%% Note that pdgf time is only correct for position 1, but not
         %%% accurate for all the rest of positions. 03/04/2014
-        pdgf_time = data.time(after_pdgf)+30/60;
+        pdgf_time = time(after_pdgf)+30/60;
     else % no pdgf was added
-        pdgf_time = data.time(1)-0.5; % consistent with g2p_init_data
+        pdgf_time = time(1)-0.5; % consistent with g2p_init_data
     end;
-    time = data.time - pdgf_time; 
+    temp = time - pdgf_time; clear time;
+    % convert time to 2D matrix with this_image_index and time;
+    time = [data.image_index', temp]; clear temp;
 
     if save_file
         if compute_cell_size
@@ -147,8 +148,8 @@ else
     figure(fn+2); subplot(subm,subn,subplot_position); my_figure('handle', fn+2); 
 end;
 hold on;
-% plot(time(data.image_index,2), 'LineWidth',2);
-plot(time(:, 2), 'LineWidth',2);
+% Needed for removed files
+plot(this_image_index, time(this_image_index,2), 'LineWidth',2);
 title(regexprep(cell_name,'_','\\_'));
 xlabel('Index'); ylabel('Time (min)');
 
@@ -185,7 +186,7 @@ else
     my_figure('handle', fn+4, 'font_size', 18, 'line_width', 2.5);
 end;
 hold on;
-plot(time(this_image_index, 2), this_fret_ratio, 'r','LineWidth',2);
+plot(time(this_image_index,2), this_fret_ratio, 'r','LineWidth',2);
 title(regexprep(cell_name,'_','\\_'));
 % xlabel('Time (min)'); ylabel('Intensity Ratio');
 clear this_fret_ratio;
@@ -206,7 +207,7 @@ if compute_cell_size
 end;
 
 %% output
-temp = time(this_image_index); clear time;
+temp = time(this_image_index,2); clear time;
 time = temp;
 value = fret_ratio{1}(this_image_index); 
 beep;

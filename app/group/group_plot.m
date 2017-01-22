@@ -7,7 +7,7 @@
 % Example:
 % For method = 1, load the compute_time_course result.mat
 % >> group.name = 'FN1_2';
-% >> group_plot(group, 'method', 1);
+% >> group_plot(group, 'method', 1); 
 %
 % For method = 2, read the excel file.
 % >> p = 'C:\Users\public.BIOE-FRET-03.000\Documents\kathy\data\mingxing\lynfyn_0225_2014\';
@@ -35,7 +35,7 @@
 % 'Dish5','compute_cell_size','1');
 
 
-% Copyright: Shaoying Lu and Yingxiao Wang 2013 
+% Copyright: Shaoying Lu and Yingxiao Wang 2013-2017 
 % Email: shaoying.lu@gmail.com
 
 function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
@@ -56,13 +56,15 @@ default_value = {0, 1, 1, 1, 1, ...
 %time_interp = [-20:2:0,0:1:10,10:2:160]';
 if method ==1 || method ==3 
     group_name = group.name;
-    display(sprintf('Group Name : %s',group_name));
+    fprintf('Group Name : %s\n', group_name);
 elseif method ==2 || method == 4 
     file_name = group.file;
     group_index = group.index;
 end;
 
 result_file = strcat(group.data.path,'output/', 'result.mat');
+% method == 1 is the same as method == 3
+% so we can merge them together. 
 if method == 1 % load result.mat
     % exp = init_group(group_name);
     res = load(result_file);
@@ -77,7 +79,7 @@ if method == 1 % load result.mat
                  data = init_data(this_cell_name);
                  % result_file = strcat(data.path, 'output/', 'result.mat');
                  delete(result_file);
-                compute_time_course(this_cell_name, data);
+                 compute_time_course(this_cell_name, data);
             end;
         end;        
     end;
@@ -94,7 +96,7 @@ if method == 1 % load result.mat
             res = load(result_file);
             exp{i}.cell(j).time = res.time(data.image_index);
             exp{i}.cell(j).value = res.fret_ratio(data.image_index, i_layer);
-            if compute_cell_size,
+            if compute_cell_size
                 exp{i}.cell(j).size = res.cell_size(data.image_index);
             end;
             clear cell_name data result_file res;
@@ -108,7 +110,7 @@ elseif method ==2 % read the time and ratio values from the excel file
     % Need to improve the excel_read_curve function later
     nnn = length(exp{1}.cell(1).time);
     tt = exp{1}.cell(1).time(nnn);
-    for j = 1:length(exp{1}.cell),
+    for j = 1:length(exp{1}.cell)
         exp{1}.cell(j).time = exp{1}.cell(j).time -tt;
     end;
     group_name = exp{1}.name;
@@ -121,18 +123,19 @@ elseif method == 3
     % Loop through the subfolders 
     list = dir(strcat(data.path,'../'));
     % ignore the 1st and 2nd folders which are './' and '../'
-    num_folders = length(list);
+    num_folder = length(list);
     num_exps =1;
     exp = cell(num_exps, 1);
     j=0;
-    for i = 3: num_folders,
-        if ~list(i).isdir, % ignore all the files
+    for i = 3: num_folder
+        % Going through all subfolders, ignoring files, ./ , ../,  the output
+        % folder
+        if ~list(i).isdir % ignore all the files
             continue;
         end;
-        
        data_i = data;
        name_i =list(i).name;
-       if strcmp(name_i, 'output'), % ingore the output folder
+       if strcmp(name_i, 'output') % ingore the output folder
            continue;
        end;
 
@@ -145,30 +148,24 @@ elseif method == 3
         res = load(result_file);
         
         %Adding for loop to try to adapt group_plot() for multiple objects in one image -Shannon 8/12/2016
-        num_objects = length(res.fret_ratio);
-        for k = 1:num_objects
+        num_object = length(res.fret_ratio);
+        for k = 1:num_object
             j = j+1;
 
         % read the right time for plotting, Lexie on 02/19/2015
 %         exp{1}.cell(j).time = res.time(res.this_image_index);
             exp{1}.cell(j).time = res.time(res.this_image_index,2);
-        % 02/19/2015
         
-        %Adapting group_plot() for multiple objects. -Shannon 8/12/2016
+        % Adapting group_plot() for multiple objects. -Shannon 8/12/2016
+        % i_layer is currently the first (outer) layer or the first roi. 
             exp{1}.cell(j).value = res.fret_ratio{k}(res.this_image_index, i_layer);
             if compute_cell_size
                 exp{1}.cell(j).size = res.cell_size{k}(res.this_image_index);
             end;
-%             exp{1}.cell(j).value = res.fret_ratio{1, 1}(res.this_image_index, i_layer);
-%             if compute_cell_size,
-%                 exp{1}.cell(j).size = res.cell_size{1, 1}(res.this_image_index);
-%             end;
-        % 8/12/2016
         end
         
         clear result_file res name_i data_i si_str;
     end; % for i 
-
 end; % if method == 1, 
 
 
@@ -193,20 +190,20 @@ time_interp = [t_limit(1) : 0.5 : -0.5,0 : 0.1 : 10,10.5 : 0.5 : t_limit(2)]';
 
 % Initialize the vectors/matrices
 num_cells_total =0;
-for i =1:num_exps,
+for i =1:num_exps
     num_cells_total = num_cells_total+ length(exp{i}.cell);
 end;
 nn = length(time_interp); % number of time_points
 ratio_array=zeros(nn, num_cells_total);
 size_array = zeros(nn, num_cells_total);
 this_cell = 1;
-for i = 1:num_exps,
+for i = 1:num_exps
     num_cells = length(exp{i}.cell);
-    for j = 1:num_cells,
+    for j = 1:num_cells
         this_time = exp{i}.cell(j).time;
         this_ratio = exp{i}.cell(j).value;
         ratio_array(:,this_cell) = my_interp(this_time, this_ratio, time_interp);
-        if compute_cell_size,
+        if compute_cell_size
             this_size = exp{i}.cell(j).size;
             size_array(:, this_cell) = my_interp(this_time, this_size, time_interp);
         end;
@@ -221,9 +218,9 @@ this_cell = 1;
 % Between -5 and -2 minutes
 before_index = (time_interp<=0)&(time_interp>=-15); 
 ratio_before = (mean(ratio_array(before_index, :)))';
-for i = 1:num_exps,
+for i = 1:num_exps
     num_cells = length(exp{i}.cell);
-    for j = 1:num_cells,
+    for j = 1:num_cells
         norm_ratio_array(:,this_cell) = ratio_array(:,this_cell)/ratio_before(this_cell);
         exp{i}.cell(j).norm_value = exp{i}.cell(j).value/ratio_before(this_cell);
         this_cell = this_cell+1;
@@ -258,10 +255,10 @@ if enable_plot
         end 
         hold off
         x_index = 1;
-        [x(x_index), y] = ginput(tag_curve);
+        [x(x_index), ~] = ginput(tag_curve);
         while(round(x(x_index)) >=  shift)
             x_index = x_index + 1;
-            [x(x_index), y] = ginput(tag_curve);
+            [x(x_index), ~] = ginput(tag_curve);
         end
         x(length(x)) = [];
         index_bad_position = round(x) - shift; % the index number of the bad position
@@ -324,11 +321,11 @@ if sum(sum(size_array))>0
     norm_size_array = zeros(size(size_array));
     this_cell = 1;
     size_before = (mean(size_array(before_index, :)))';
-    for j = 1:num_cells,
+    for j = 1:num_cells
         norm_size_array(:,this_cell) = size_array(:,this_cell)/size_before(this_cell);
         this_cell = this_cell+1;
     end; 
-    if enable_plot,
+    if enable_plot
         % Plot the size arrays
         my_plot(time_interp, size_array, 'title_str',  plot_title);
         ylabel('Cell Size');
@@ -383,27 +380,28 @@ end % plot the average curve with all original data ploted as circles
 %% export to excel files
 if save_excel_file
     time_ratio = [time_interp norm_ratio_array];
-    file_name = strcat(group.data.path,'../../', 'result');
+    file_name = strcat(group.data.path,'../../', 'result-norm');
     if ~isempty(sheet_name)
         xlswrite(file_name, time_ratio, sheet_name);
     else
         xlswrite(file_name, time_ratio);
     end;
     
-% %%%%%%%%%%%%%%%%%%%%%output the original ratio value
+    %%%%%%%%%%%%%%%%%%%%%output the original ratio value
     time_ratio1 = [time_interp ratio_array];
     file_name1 = strcat(group.data.path,'../../', 'result-raw');
-    if ~isempty(sheet_name),
+    if ~isempty(sheet_name)
         xlswrite(file_name1, time_ratio1, sheet_name);
     else
         xlswrite(file_name1, time_ratio1);
     end;
+    
     % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%end
     %%%%%10/21/2014 Lexie output the excel file of cell size
     if compute_cell_size
         time_size = [time_interp norm_size_array];
         file_name = strcat(group.data.path,'../../','cell-size');
-        if ~isempty(sheet_name),
+        if ~isempty(sheet_name)
             xlswrite(file_name, time_size, sheet_name);
         else
             xlswrite(file_name, time_size);
