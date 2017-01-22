@@ -69,12 +69,12 @@ if method == 1 % load result.mat
     % exp = init_group(group_name);
     res = load(result_file);
     exp = res.exp; clear res;
-    num_exps = length(exp);
+    num_exp = length(exp);
 
     if update_result % default = 0
-        for i = 1:num_exps
-            num_cells = length(exp{i}.cell_name);
-            for j = 1:num_cells
+        for i = 1:num_exp
+            num_cell = length(exp{i}.cell_name);
+            for j = 1:num_cell
                 this_cell_name = exp{i}.cell_name{j};
                  data = init_data(this_cell_name);
                  % result_file = strcat(data.path, 'output/', 'result.mat');
@@ -86,10 +86,10 @@ if method == 1 % load result.mat
     
     % load the time and ratio values from result.mat file
     % load the area variable if it exists
-    for i = 1:num_exps
-        num_cells = length(exp{i}.cell_name);
-        %exp{i}.cell = cell(num_cells, 1);
-        for j = 1:num_cells
+    for i = 1:num_exp
+        num_cell = length(exp{i}.cell_name);
+        %exp{i}.cell = cell(num_cell, 1);
+        for j = 1:num_cell
             this_cell_name = exp{i}.cell_name{j};
             data = init_data(this_cell_name);
             result_file = strcat(data.path, 'output/','result.mat');
@@ -103,7 +103,7 @@ if method == 1 % load result.mat
         end;
     end;
 elseif method ==2 % read the time and ratio values from the excel file
-    num_exps = 1;
+    num_exp = 1;
     old_exp = excel_read_curve(file_name);
     exp{1} = old_exp{group_index};
     % pdgf time is saved to the last row of the first time column
@@ -124,8 +124,8 @@ elseif method == 3
     list = dir(strcat(data.path,'../'));
     % ignore the 1st and 2nd folders which are './' and '../'
     num_folder = length(list);
-    num_exps =1;
-    exp = cell(num_exps, 1);
+    num_exp =1;
+    exp = cell(num_exp, 1);
     j=0;
     for i = 3: num_folder
         % Going through all subfolders, ignoring files, ./ , ../,  the output
@@ -176,7 +176,7 @@ if any(strcmp(varargin, 't_limit'))   % user specifies a interplotation range, u
     t_left_limit = t_limit(1);
     t_right_limit = t_limit(2);
 else
-    t_left_limit = floor(first_point_time); % if there is no such input, extac information from image data
+    t_left_limit = floor(first_point_time); % if there is no such input, extract information from image data
     t_right_limit = ceil(last_point_time);
 end
 t_limit = [t_left_limit, t_right_limit];
@@ -189,17 +189,17 @@ time_interp = [t_limit(1) : 0.5 : -0.5,0 : 0.1 : 10,10.5 : 0.5 : t_limit(2)]';
 % Extend the ratio values to both sides horizontally 
 
 % Initialize the vectors/matrices
-num_cells_total =0;
-for i =1:num_exps
-    num_cells_total = num_cells_total+ length(exp{i}.cell);
+num_cell_total =0;
+for i =1:num_exp
+    num_cell_total = num_cell_total+ length(exp{i}.cell);
 end;
 nn = length(time_interp); % number of time_points
-ratio_array=zeros(nn, num_cells_total);
-size_array = zeros(nn, num_cells_total);
+ratio_array=zeros(nn, num_cell_total);
+size_array = zeros(nn, num_cell_total);
 this_cell = 1;
-for i = 1:num_exps
-    num_cells = length(exp{i}.cell);
-    for j = 1:num_cells
+for i = 1:num_exp
+    num_cell = length(exp{i}.cell);
+    for j = 1:num_cell
         this_time = exp{i}.cell(j).time;
         this_ratio = exp{i}.cell(j).value;
         ratio_array(:,this_cell) = my_interp(this_time, this_ratio, time_interp);
@@ -218,9 +218,9 @@ this_cell = 1;
 % Between -5 and -2 minutes
 before_index = (time_interp<=0)&(time_interp>=-15); 
 ratio_before = (mean(ratio_array(before_index, :)))';
-for i = 1:num_exps
-    num_cells = length(exp{i}.cell);
-    for j = 1:num_cells
+for i = 1:num_exp
+    num_cell = length(exp{i}.cell);
+    for j = 1:num_cell
         norm_ratio_array(:,this_cell) = ratio_array(:,this_cell)/ratio_before(this_cell);
         exp{i}.cell(j).norm_value = exp{i}.cell(j).value/ratio_before(this_cell);
         this_cell = this_cell+1;
@@ -321,7 +321,7 @@ if sum(sum(size_array))>0
     norm_size_array = zeros(size(size_array));
     this_cell = 1;
     size_before = (mean(size_array(before_index, :)))';
-    for j = 1:num_cells
+    for j = 1:num_cell
         norm_size_array(:,this_cell) = size_array(:,this_cell)/size_before(this_cell);
         this_cell = this_cell+1;
     end; 
