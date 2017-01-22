@@ -188,7 +188,7 @@ end;
 hold on;
 plot(time(this_image_index,2), this_fret_ratio, 'r','LineWidth',2);
 title(regexprep(cell_name,'_','\\_'));
-% xlabel('Time (min)'); ylabel('Intensity Ratio');
+xlabel('Time (min)'); ylabel('Intensity Ratio');
 clear this_fret_ratio;
 
 %%%%%%%%10/21/2014 lexie plot cell size change
