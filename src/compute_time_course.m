@@ -37,7 +37,7 @@ if ~exist(out_file,'file') || load_file ==0
     % Kathy 01/16/2017
     % Need to pre-allocate the variable time here, with
     % something like :
-    time = (-1)*ones(max(data.image_index),1);
+    time = nan*ones(max(data.image_index),1);
     for i = data.image_index
         index = sprintf(data.index_pattern{2}, i);       
         current_file = regexprep(first_channel_file, data.index_pattern{1}, index);
@@ -149,7 +149,7 @@ else
 end;
 hold on;
 % Needed for removed files
-plot(this_image_index, time(this_image_index,2), 'LineWidth',2);
+plot(time(:,1), time(:,2), 'LineWidth',2);
 title(regexprep(cell_name,'_','\\_'));
 xlabel('Index'); ylabel('Time (min)');
 
