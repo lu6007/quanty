@@ -23,7 +23,9 @@ out_file = strcat(output_path, 'result.mat');
 if ~exist(out_file,'file') || load_file ==0
 
     %%% Interface with fluocell %%%
+    %%% Main sub-function %%%
     data = batch_update_figure(data);
+    %%% 
     fret_ratio = data.ratio;
     cfp_intensity = data.channel1;
     yfp_intensity = data.channel2;
@@ -34,10 +36,7 @@ if ~exist(out_file,'file') || load_file ==0
     % skip deleted frames when plot, Lexie on 2/19/2015
     [~,NAME,EXT] = fileparts(data.first_file);
     first_channel_file = strcat(NAME, EXT);
-    % Kathy 01/16/2017
-    % Need to pre-allocate the variable time here, with
-    % something like :
-    time = nan*ones(max(data.image_index),1);
+    time = ones(max(data.image_index),1);
     for i = data.image_index
         index = sprintf(data.index_pattern{2}, i);       
         current_file = regexprep(first_channel_file, data.index_pattern{1}, index);

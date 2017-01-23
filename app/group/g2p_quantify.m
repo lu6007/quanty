@@ -74,10 +74,11 @@ for i = 3: num_folder
    first_file_no_path = strcat(data_i.prefix, ext);
    data_i.first_file = strcat(data_i.path, first_file_no_path);
 
+   %%% Main sub-function
    [~, ~, ~] = compute_time_course(name_i, data_i, 'subplot_position', sub_i, ...
        'save_file', save_file, 'load_file', load_file, 'compute_cell_size', ...
        compute_cell_size);
-   %
+   %%%
    sub_i = sub_i+1;
    clear name_i data_i si_str;
 end; % for i 
