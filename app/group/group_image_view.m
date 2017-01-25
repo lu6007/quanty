@@ -74,7 +74,7 @@ for n = 1 : length(time_point)
         % Load the exsiting data 
         res = load(out_file);
         time = res.time;
-        real_time = time(:, 2) - time(1, 2);
+        real_time = time(:) - time(1);
         tmp = abs(real_time - time_point(n));
         [~, idx] = min(tmp);
         data_i.index= idx;

@@ -26,35 +26,23 @@ if ~exist(out_file,'file') || load_file ==0
     %%% Main sub-function %%%
     data = batch_update_figure(data);
     %%% 
+    image_index = (1: max(data.image_index))';
     fret_ratio = data.ratio;
     cfp_intensity = data.channel1;
     yfp_intensity = data.channel2;
-    this_image_index = data.image_index;
     cfp_background = data.channel1_bg;
     yfp_background = data.channel2_bg;
+%     if compute_cell_size
+%         cell_size = data.cell_size;
+%     end;
     
-    % skip deleted frames when plot, Lexie on 2/19/2015
-    [~,NAME,EXT] = fileparts(data.first_file);
-    first_channel_file = strcat(NAME, EXT);
-    time = ones(max(data.image_index),1);
+    % Correct the time value when imaging pasts midnight
+    time = data.time(:,2);
     for i = data.image_index
-        index = sprintf(data.index_pattern{2}, i);       
-        current_file = regexprep(first_channel_file, data.index_pattern{1}, index);
-        time(i) = get_time_2(strcat(data.path, current_file));
         if i >= 2 && time(i) >= 0 && time(i) < time(i - 1)
             time(i) = time(i) + 24 * 60;
         end;
-        clear index current_file
-    end; 
-    clear first_channel_file NAME EXT 
-    ii = (time > -1);
-    temp = this_image_index(ii); clear this_image_index;
-    this_image_index = temp; clear temp;
-    
-    if compute_cell_size
-        cell_size = data.cell_size;
-    end;
-
+    end;     
     % time in minutes PDGF was added 30 seconds before frame (after_pdgf)
     if isfield(data,'pdgf_time')
         pdgf_time = data.pdgf_time;
@@ -62,23 +50,19 @@ if ~exist(out_file,'file') || load_file ==0
         after_pdgf = data.pdgf_between_frame(2);
         %%% Note that pdgf time is only correct for position 1, but not
         %%% accurate for all the rest of positions. 03/04/2014
-        pdgf_time = time(after_pdgf)+30/60;
+        pdgf_time = time(after_pdgf)+0.5;
     else % no pdgf was added
         pdgf_time = time(1)-0.5; % consistent with g2p_init_data
     end;
-    temp = time - pdgf_time; clear time;
-    % convert time to 2D matrix with this_image_index and time;
-    time = [data.image_index', temp]; clear temp;
+    time = time - pdgf_time; 
+
+    ii = ~isnan(time);
+    this_image_index = image_index(ii); 
 
     if save_file
-        if compute_cell_size
-            save(out_file, 'time', 'cfp_intensity', 'yfp_intensity', 'fret_ratio','this_image_index',...
-                'cfp_background', 'yfp_background', 'cell_size');
-        else
-            save(out_file, 'time', 'cfp_intensity', 'yfp_intensity', 'fret_ratio','this_image_index',...
+            save(out_file, 'image_index', 'this_image_index', ...
+                'time', 'cfp_intensity', 'yfp_intensity', 'fret_ratio', ... 
                 'cfp_background', 'yfp_background');
-        end;
-
     end;
 else % if exist(out_file, 'file') && load_file
     res = load(out_file);
@@ -89,6 +73,7 @@ else % if exist(out_file, 'file') && load_file
     fret_ratio = res.fret_ratio;
     cfp_background = res.cfp_background;
     yfp_background = res.yfp_background;
+    image_index = res.image_index;
     this_image_index = res.this_image_index;
     if compute_cell_size
         cell_size = res.cell_size;
@@ -124,11 +109,11 @@ hold on;
 
 %Problem: cfp_intensity always seems to be AT LEAST two cells long,
 %irrespective of the actual number of objects in an image.
-%Current workaround: set num_objects based on the fret_ratio, which seems to
+%Current workaround: set num_object based on the fret_ratio, which seems to
 %reliably reflect the actual number of objects in an image. -Shannon 8/10/2016
-% num_objects = length(cfp_intensity);
-num_objects = length(fret_ratio);
-for i = 1:num_objects
+% num_object = length(cfp_intensity);
+num_object = length(fret_ratio);
+for i = 1:num_object
     plot(this_image_index, cfp_intensity{i}(this_image_index,1), 'b','LineWidth',2); 
     plot(this_image_index, yfp_intensity{i}(this_image_index,1), 'g','LineWidth',2);
 end
@@ -148,7 +133,7 @@ else
 end;
 hold on;
 % Needed for removed files
-plot(time(:,1), time(:,2), 'LineWidth',2);
+plot(image_index, time(image_index), 'LineWidth',2);
 title(regexprep(cell_name,'_','\\_'));
 xlabel('Index'); ylabel('Time (min)');
 
@@ -164,16 +149,15 @@ hold on;
 %Converts from fret_ratio's cell data type to a double data type and also
 %shrinks the matrix to match this_image_index's size so it will plot correctly.
 %Preallocation of matrix space for this_fret_ratio.
-num_image_indices = length(this_image_index);
-num_objects = length(fret_ratio);
-this_fret_ratio = inf(num_image_indices,num_objects);
+num_image_index = length(this_image_index);
+num_object = length(fret_ratio);
+this_fret_ratio = nan(num_image_index,num_object);
 %Assigns the corresponding fret_ratio value to the matrix.
-for i = 1:num_objects
+for i = 1:num_object
     this_fret_ratio(:,i) = fret_ratio{i}(this_image_index,1);
 end
 
 plot(this_image_index, this_fret_ratio, 'r','LineWidth',2);
-%plot(this_image_index, fret_ratio{1}(this_image_index, 1), 'r','LineWidth',2);
 title(regexprep(cell_name,'_','\\_'));
 xlabel('Index'); ylabel('Intensity Ratio');
 
@@ -182,32 +166,18 @@ if ~enable_subplot
     my_figure; 
 else
     figure(fn+4); subplot(subm,subn,subplot_position); 
-    my_figure('handle', fn+4, 'font_size', 18, 'line_width', 2.5);
+    my_figure('handle', fn+4); 
+    % my_figure('handle', fn+4, 'font_size', 18, 'line_width', 2.5);
 end;
 hold on;
-plot(time(this_image_index,2), this_fret_ratio, 'r','LineWidth',2);
+plot(time(this_image_index), this_fret_ratio, 'r','LineWidth',2);
 title(regexprep(cell_name,'_','\\_'));
 xlabel('Time (min)'); ylabel('Intensity Ratio');
 clear this_fret_ratio;
 
-%%%%%%%%10/21/2014 lexie plot cell size change
-if compute_cell_size
-    if ~enable_subplot
-        my_figure;
-    else
-        figure(fn+5); subplot(subm,subn,subplot_position); my_figure('handle', fn+5); 
-    end;
-    hold on;
-    % plot(this_image_index, cell_size{1}(this_image_index, 1), 'r', 'LineWidth', 2);
-    this_cell_size = [cell_size{1}(this_image_index, 1), cell_size{2}(this_image_index, 1)];
-    plot(this_image_index, this_cell_size, 'r','LineWidth',2);
-    title(regexprep(cell_name,'_','\\_'));
-    xlabel('Index'); ylabel('Cell Size');
-end;
-
 %% output
-temp = time(this_image_index,2); clear time;
-time = temp;
-value = fret_ratio{1}(this_image_index); 
+temp = time(this_image_index); clear time;
+time = temp; clear temp;
+value = fret_ratio{1}(this_image_index, 1); 
 beep;
 return;

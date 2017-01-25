@@ -31,6 +31,7 @@ data.path = strcat(p, 'p1/');
 data.first_file = strcat(data.path, '6_w1CFP_s1_t1.TIF');
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
+g2p_quantify(group, 'show_figure', 0, 'load_file', 0, 'save_file',1);
 group_image_view(group, 'time_point', [1; 25; 50]);
 if enable_pause, pause; end
 close all;
@@ -42,6 +43,7 @@ data.path = strcat(p, 'p1/');
 data.first_file = strcat(data.path, '6_w1CFP_s1_t1.TIF');
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
-g2p_quantify(group, 'show_figure', 1, 'load_file', 1, 'save_file',0);
+% g2p_quantify(group, 'show_figure', 1, 'load_file', 1, 'save_file',0);
+g2p_quantify(group, 'show_figure', 0, 'load_file', 0, 'save_file', 1);
 
 if enable_time, toc; end
