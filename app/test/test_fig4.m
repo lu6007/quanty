@@ -4,7 +4,7 @@
 % only and inlude the last slash to close the folder name.
 %% 
 close all;
-root = 'D:/doc/paper/2016/fluocell_1221/data/';
+root = 'D:/doc/paper/2016/fluocell_1221/quanty_dataset_2/';
 enable_pause = 0;
 enable_time = 1;
 
@@ -36,9 +36,8 @@ group = g2p_init_data(data, 'load_file', 1);
 g2p_quantify(group, 'show_figure', 1, 'load_file', 1, 'save_file',0);
 if enable_pause, pause; end
 close all;
-group_plot(group,'method',1, 'save_excel_file', 0, 'sheet_name', 'Cyto-Fyn');
+group_plot(group,'method',1, 'save_excel_file', 1, 'sheet_name', 'Cyto-Fyn');
 axis([-10 65 0.5 3.0]);
-
 
 %%
 p = strcat(root, 'fig4/0728/2-Lyn-Fyn-Cbl-wt/');
@@ -54,10 +53,10 @@ if enable_pause, pause; end
 close all;
 % If the data file does not exist, we can use the GUI to initialize
 % fluocell_data. Then copy to data and save as the data.mat file. 
-group_plot(group,'method',1, 'save_excel_file', 0, 'sheet_name', 'Lyn-Fyn');
+group_plot(group,'method',1, 'save_excel_file', 1, 'sheet_name', 'Lyn-Fyn');
 axis([-10 65 0.5 3.0]);
-group_plot(group,'method',1, 'enable_average_plot', 1);
-axis([-10 65 0.5 3.0]);
+% group_plot(group,'method',1, 'enable_average_plot', 1);
+% axis([-10 65 0.5 3.0]);
 if enable_pause, pause; end
 close all;
 % The excel file 'result-norm.xls' contains the normlized time courses of 

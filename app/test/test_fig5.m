@@ -1,7 +1,7 @@
 % test_fig5.m
 %%
 close all;
-root = 'D:/doc/paper/2016/fluocell_1221/data/';
+root = 'D:/doc/paper/2016/fluocell_1221/quanty_dataset_2/';
 enable_pause = 0;
 enable_time = 1;
 
@@ -18,3 +18,5 @@ group_make_movie(group, 'position', 'p3', 'stimulus_info', 'PDGF');
 if enable_pause, pause; end
 close all;
 test_3dview;
+
+if enable_time, toc; end

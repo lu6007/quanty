@@ -9,9 +9,9 @@
 
 function [time, value, data] = compute_time_course(cell_name, data, varargin)
 fprintf('Cell Name : %s\n',cell_name);
-parameter_name = {'save_file', 'load_file', 'subplot_position', 'compute_cell_size'};
-default_value = {1, 1, 0, 0};
-[save_file, load_file, subplot_position, compute_cell_size] =...
+parameter_name = {'save_file', 'load_file', 'subplot_position'};
+default_value = {1, 1, 0};
+[save_file, load_file, subplot_position] =...
     parse_parameter(parameter_name, default_value, varargin);
 
 
@@ -75,9 +75,6 @@ else % if exist(out_file, 'file') && load_file
     yfp_background = res.yfp_background;
     image_index = res.image_index;
     this_image_index = res.this_image_index;
-    if compute_cell_size
-        cell_size = res.cell_size;
-    end;
 end;
 
 clear path output_path;
@@ -86,11 +83,7 @@ clear path output_path;
 %%% Configuring the subplots. %%%
 if subplot_position
     enable_subplot = 1;
-    if ~compute_cell_size
-        num_figures = 4;
-    else
-        num_figures = 5;
-    end;
+    num_figures = 4;
     subm = 2; % number of rows
     subn = 3; % number of columns
     fn = 2+floor((subplot_position-1)/(subm*subn))*num_figures;

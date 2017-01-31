@@ -85,7 +85,9 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
                 delete(result_file);
                 compute_time_course(name_i, data_i);
             end;
+            %%%
             res = load(result_file);
+            %%%
 
             % Adding for loop to try to adapt group_plot() for multiple objects in one image -Shannon 8/12/2016
             num_object = length(res.fret_ratio);
@@ -118,7 +120,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     %% export to excel files
     if save_excel_file   
 
-        file_name = strcat(group.data.path,'../../', 'result');
+        file_name = strcat(group.data.path,'../../', 'result.xlsx');
          % Save the original and normalized results
          % Time, Ratio, Time, Ratio at the same length with nan for missing files.   
          for i = 1:num_exp
@@ -309,7 +311,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     line_width= 3;
     if enable_average_plot
         % stop_index = find(time_interp == last_time_point);
-        mean_ratio_array = mean(norm_ratio_array, 2);
+        mean_ratio_array = mean(ratio_array, 2);
         figure('color', 'w');
         set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
         set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
@@ -317,13 +319,14 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         % set(gcf, 'Position', [400 400 600 450]); 
         hold on;
         for n = 1 : length(exp{1, 1}.cell)      
-            plot(exp{1, 1}.cell(n).time, exp{1, 1}.cell(n).norm_value, 'o', 'color', [0.5 0.5 0.5]);
+            plot(exp{1, 1}.cell(n).time, exp{1, 1}.cell(n).value, 'o', 'color', [0.5 0.5 0.5]);
             % plot(time_interp, norm_ratio_array, 'o', 'color', [0.5 0.5 0.5]);
         end 
         % add the error bar
         plot(time_interp, mean_ratio_array, 'k', 'LineWidth', line_width);
-        std_error = std(norm_ratio_array,0,2) / sqrt(size(norm_ratio_array, 2));
-        add_error_bar(time_interp, mean(norm_ratio_array, 2), std_error, 'error_bar_interval', error_bar_interval);
+        std_error = std(ratio_array,0,2) / sqrt(size(norm_ratio_array, 2));
+        add_error_bar(time_interp, mean(ratio_array, 2), std_error,...
+            'error_bar_interval', error_bar_interval);
         ylabel('Intensity Ratio');
         xlabel('Time (min)'); 
         title('Average Plot with Single Cell Data'); axis auto;
@@ -333,7 +336,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     %% export to excel files
     if save_excel_file
         time_ratio = [time_interp norm_ratio_array];
-        file_name = strcat(group.data.path,'../../', 'result-norm');
+        file_name = strcat(group.data.path,'../../', 'result-norm.xlsx');
         if ~isempty(sheet_name)
             xlswrite(file_name, time_ratio, strcat(sheet_name,'-Interp'));
         else
@@ -342,7 +345,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
 
         %%%%%%%%%%%%%%%%%%%%%output the original ratio value
         time_ratio1 = [time_interp ratio_array];
-        file_name1 = strcat(group.data.path,'../../', 'result-interp');
+        file_name1 = strcat(group.data.path,'../../', 'result-interp.xlsx');
         if ~isempty(sheet_name)
             xlswrite(file_name1, time_ratio1, strcat(sheet_name,'-Interp'));
         else
