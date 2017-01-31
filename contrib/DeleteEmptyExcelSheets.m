@@ -52,9 +52,9 @@ end
 % If fileName does not contain a "\" the name of the current path is added
 % to fileName. The reason for this is that the full path is required for
 % the command "excelObj.workbooks.Open(fileName)" to work properly.
-if isempty(strfind(fileName,'\'))
-fileName = [cd '\' fileName];
-end
+% if isempty(strfind(fileName,'\'))
+% fileName = [cd '\' fileName];
+% end
 
 excelObj = actxserver('Excel.Application');
 excelWorkbook = excelObj.workbooks.Open(fileName);

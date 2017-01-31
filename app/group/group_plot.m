@@ -87,7 +87,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             end;
             res = load(result_file);
 
-            %Adding for loop to try to adapt group_plot() for multiple objects in one image -Shannon 8/12/2016
+            % Adding for loop to try to adapt group_plot() for multiple objects in one image -Shannon 8/12/2016
             num_object = length(res.fret_ratio);
             for k = 1:num_object
                 j = j+1;
@@ -95,6 +95,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
                % Adapting group_plot() for multiple objects. -Shannon 8/12/2016
                % i_layer is currently the first (outer) layer or the first roi. 
                 exp{1}.cell(j).value = res.fret_ratio{k}(res.image_index, i_layer);
+                exp{1}.cell(j).this_image_index = res.this_image_index;
             end
 
             clear result_file res name_i data_i si_str;
@@ -117,51 +118,57 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     %% export to excel files
     if save_excel_file   
 
-        file_name = strcat(group.data.path,'../../', 'result-raw');
-
-          % Save the original results
+        file_name = strcat(group.data.path,'../../', 'result');
+         % Save the original and normalized results
          % Time, Ratio, Time, Ratio at the same length with nan for missing files.   
          for i = 1:num_exp
             num_cell = length(exp{i}.cell);
             num_frame = size(exp{i}.cell(1).time,1);
             time_ratio_array = nan(num_frame, 2*num_cell);
-            original_sheet = strcat(sheet_name, '-Origin-', num2str(i));
+            norm_time_ratio_array = nan(num_frame, 2*num_cell);
             for j = 1:num_cell
-                time_ratio_array(:,j*2-1) = exp{i}.cell(j).time;
-                time_ratio_array(:,j*2) = exp{i}.cell(j).value;
+                time = exp{i}.cell(j).time;
+                value = exp{i}.cell(j).value;
+                time_ratio_array(:,j*2-1) = time;
+                time_ratio_array(:,j*2) = value;
+                
+                before_index = (time>=-15) & (time<=0); 
+                ratio_before = mean(value(before_index))';
+                norm_time_ratio_array(:, j*2-1) = time;
+                norm_time_ratio_array(:, j*2) = value/ratio_before;
+                clear time value before_index;
             end;
-            % xlswrite(file_name, {'Time (min)', 'Ratio'}, original_sheet, 'A1');
+            % xlswrite(file_name, {'Time (min)', 'Ratio'}, sheet_name, 'A1');
+            original_sheet = strcat(sheet_name, '-', num2str(i));
             xlswrite(file_name, time_ratio_array, original_sheet, 'A1');
-            clear time_ratio_array original_sheet;
+            norm_sheet = strcat(sheet_name, '-Norm-', num2str(i));
+            xlswrite(file_name, norm_time_ratio_array, norm_sheet, 'A1');
+            clear time_ratio_array original_sheet norm_time_ratio_array norm_sheet;
         end;
 
-    %     % Save the normalized results
-    %     % Time, Ratio, Time, Ratio at the same length with nan for missing files.   
-    %      for i = 1:num_exp
-    %         num_cell = length(exp{i}.cell);
-    %         num_frame = size(exp{i}.cell(1).time,1);
-    %         time_ratio_array = nan(num_frame, 2*num_cell);
-    %         original_sheet = strcat(sheet_name, '-Norm-', num2str(i));
-    %         for j = 1:num_cell
-    %             time_ratio_array(:,j*2-1) = exp{i}.cell(j).time;
-    %             time_ratio_array(:,j*2) = exp{i}.cell(j).norm_value;
-    %         end;
-    %         % xlswrite(file_name, {'Time (min)', 'Ratio'}, original_sheet, 'A1');
-    %         xlswrite(file_name, time_ratio_array, original_sheet, 'A1');
-    %         clear time_ratio_array original_sheet;
-    %     end;
-    % 
     end % if save_exel_file
 
 
-    % preparation for interpolation
-    if isempty(t_limit)   % If the user did not specify an interplotation range, use this range
-        first_point_time = exp{1}.cell(1).time(1); % extract the first point time of image data
-        last_point_time = exp{1}.cell(end).time(end); % extract the last time point of image data
-        t_left_limit = ceil(first_point_time); % if there is no such input, extract information from image data
-        t_right_limit = floor(last_point_time);
+    % Preparation for interpolation
+    % If the user did not specify an itnerpolation range, extract
+    % information from image data. 
+    if isempty(t_limit)   
+        jj = 1;
+        first_time_point = exp{1}.cell(end).time(jj); % extract the first point time of image data
+        while isnan(first_time_point) 
+            jj = jj+1;
+            first_time_point = exp{1}.cell(jj).time(1); 
+        end;
+        jj = 0;
+        last_time_point = exp{1}.cell(1).time(end-jj); % extract the last time point of image data
+        while isnan(last_time_point)
+            jj = jj+1;
+            last_time_point = exp{1}.cell(jj).time(end-jj);
+        end;
+        t_left_limit = ceil(first_time_point); 
+        t_right_limit = floor(last_time_point);
         t_limit = [t_left_limit, t_right_limit];
-    end
+    end % if isempty(t_limit)
     
     time_interp = [t_limit(1):0.5:0, 0.1:0.1:10, 10.5:0.5:t_limit(2)]';
 
@@ -178,16 +185,18 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     end;
     nn = length(time_interp); % number of time_points
     ratio_array=zeros(nn, num_cell_total);
-    size_array = zeros(nn, num_cell_total);
     this_cell = 1;
     for i = 1:num_exp
         num_cell = length(exp{i}.cell);
         for j = 1:num_cell
-            this_time = exp{i}.cell(j).time;
-            this_ratio = exp{i}.cell(j).value;
+            this_image_index = exp{i}.cell(j).this_image_index;
+            this_time = exp{i}.cell(j).time(this_image_index);
+            this_ratio = exp{i}.cell(j).value(this_image_index);
             ratio_array(:,this_cell) = my_interp(this_time, this_ratio, time_interp);
+%             figure; plot(this_time, this_ratio, 'o'); hold on;
+%             plot(time_interp, ratio_array(:,this_cell),'b');
             this_cell = this_cell+1;
-            clear this_cell_name data result_file res this ratio;
+            clear this_cell_name data result_file res this ratio this_image_index;
         end;
     end;
 
@@ -299,8 +308,8 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     font_size = 24;
     line_width= 3;
     if enable_average_plot
-        stop_index = find(time_interp == last_point_time);
-        mean_ratio_array = mean(norm_ratio_array(1:stop_index, :), 2);
+        % stop_index = find(time_interp == last_time_point);
+        mean_ratio_array = mean(norm_ratio_array, 2);
         figure('color', 'w');
         set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
         set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
@@ -312,7 +321,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             % plot(time_interp, norm_ratio_array, 'o', 'color', [0.5 0.5 0.5]);
         end 
         % add the error bar
-        plot(time_interp(1 : stop_index), mean_ratio_array, 'k', 'LineWidth', line_width);
+        plot(time_interp, mean_ratio_array, 'k', 'LineWidth', line_width);
         std_error = std(norm_ratio_array,0,2) / sqrt(size(norm_ratio_array, 2));
         add_error_bar(time_interp, mean(norm_ratio_array, 2), std_error, 'error_bar_interval', error_bar_interval);
         ylabel('Intensity Ratio');
@@ -320,19 +329,6 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         title('Average Plot with Single Cell Data'); axis auto;
         % axis([t_limit, y_limit_before_norm]);
     end % plot the average curve with all original data ploted as circles
-
-
-    % violin plot as an indication of group density distribution
-
-
-
-    % %%%%%%%%%%%%%%%%%%%%%%%output original ratio value; Lexie on 0918
-    %cancel clear variable 
-    % if normalize, % return the normalized ratio array
-    %     clear ratio_array;
-    %     ratio_array = norm_ratio_array; clear norm_ratio_array;
-    % end;
-    % %%%%%%%%%%%%%%%%%end%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     %% export to excel files
     if save_excel_file
@@ -346,7 +342,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
 
         %%%%%%%%%%%%%%%%%%%%%output the original ratio value
         time_ratio1 = [time_interp ratio_array];
-        file_name1 = strcat(group.data.path,'../../', 'result-raw');
+        file_name1 = strcat(group.data.path,'../../', 'result-interp');
         if ~isempty(sheet_name)
             xlswrite(file_name1, time_ratio1, strcat(sheet_name,'-Interp'));
         else
@@ -361,6 +357,7 @@ return;
 % Extend the ratio values to both sides horizontally
 % (2) Insert time =0 and average basal value into the time course
 % at 0 min.
+% (3) Smooth the data before and after interpolation seperately. 
 function y_interp = my_interp(x,y, x_interp)
 this_time = x;
 time_interp = x_interp;
@@ -381,7 +378,7 @@ if max(this_time)<time_interp(nn)
     this_ratio = temp; clear temp;
 end;
 
-% Insert 0 min ratio value
+% Insert the 0 min ratio value
 index_before = (this_time < 0);
 index_0 = (this_time == 0);
 index_after = (this_time>0 & this_time<=time_interp(nn));
@@ -416,8 +413,8 @@ function my_plot(x, y, varargin)
     set(gca, 'LineWidth', 1.5,'FontWeight','bold', 'FontSize', font_size);
     set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
     set(findall(gcf,'type','text'),'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold');
-    % set(gcf, 'Position', [400 400 600 450]); 
     plot(x, y, 'LineWidth',1.5);
+    
     title(regexprep(title_str,'_','\\_'));
     xlabel('Time (min)');
 return;
