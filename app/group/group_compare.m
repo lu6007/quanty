@@ -1,10 +1,10 @@
 % function group = group_compare( group, varargin )
 % Plot the mean time course of FRET ratio data with standard error bar from different
 % groups together
-% parameter_name = {'excel_file','error_bar_interval','enable_box_plot', 'enable_violin_plot', 'load_file'};
-% default_value = {'result.xls', 5, 0, 0, 0};
-% [excel_file, error_bar_interval, enable_box_plot, enable_violin_plot, load_file] = parse_parameter...
-%     (parameter_name, default_value, varargin);
+% parameter_name = {'excel_file','error_bar_interval',...
+%     'enable_box_plot', 'enable_violin_plot', 'load_file',...
+%     'group_name', 'time_range'};
+% default_value = {'result.xls', 5, 0, 0, 0, {'G1', 'G2'}, [10 20]};
 
 % Copyright: Shaoying Lu, Lexie Qin Qin and Yingxiao Wang 2014-2017 
 % Email: shaoying.lu@gmail.com

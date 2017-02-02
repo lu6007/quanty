@@ -33,9 +33,9 @@ group.name = 'p1';
 %
 if isempty(group_data) 
     p = fluocell_data.path;
-    output_file = strcat(p, '../output/data.mat');
+    output_file = strcat(p(1:end-3), 'output/data.mat'); % avoid problem when 'p1/' does not exist
 else
-    output_file = strcat(group_data.path, '../output/data.mat');
+    output_file = strcat(group_data.path(1:end-3), 'output/data.mat');
 end;
 if ~exist(fileparts(output_file), 'dir')
     mkdir(fileparts(output_file));

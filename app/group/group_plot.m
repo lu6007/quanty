@@ -38,12 +38,12 @@
 function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     parameter_name = {'update_result','enable_plot','i_layer', 'method',...
         'save_excel_file','sheet_name','y_limit_before_norm', 't_limit',...
-        'tag_curve', 'shift', 'enable_average_plot', 'error_bar_interval'};
+        'tag_curve', 'shift', 'enable_average_plot', 'error_bar_interval', 'normalize'};
     default_value = {0, 1, 1, 1, ...
-        0, '', [0.1 0.8],[], 0, 10, 0, 5};
+        0, '', [0.1 0.8],[], 0, 10, 0, 5, 0};
     [update_result, enable_plot, i_layer, method,...
         save_excel_file, sheet_name, y_limit_before_norm, t_limit,...
-        tag_curve, shift, enable_average_plot, error_bar_interval] = ...
+        tag_curve, shift, enable_average_plot, error_bar_interval, normalize] = ...
     parse_parameter(parameter_name, default_value, varargin);
     % i_layer : default = 1, outer layer
 
@@ -306,12 +306,19 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
 
     end; % if enable_plot
 
-    % plot the average curve with all normalized data ploted as circles
+    % plot the average curve with all data ploted as circles
     font_size = 24;
     line_width= 3;
     if enable_average_plot
         % stop_index = find(time_interp == last_time_point);
-        mean_ratio_array = mean(ratio_array, 2);
+        num_cell = size(norm_ratio_array, 2);
+        if normalize
+            mean_ratio_array = mean(norm_ratio_array, 2);
+            std_error = std(norm_ratio_array, 0, 2)/sqrt(num_cell);
+        else
+            mean_ratio_array = mean(ratio_array, 2);
+            std_error = std(ratio_array, 0, 2)/sqrt(num_cell);
+        end;
         figure('color', 'w');
         set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
         set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
@@ -319,13 +326,18 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         % set(gcf, 'Position', [400 400 600 450]); 
         hold on;
         for n = 1 : length(exp{1, 1}.cell)      
-            plot(exp{1, 1}.cell(n).time, exp{1, 1}.cell(n).value, 'o', 'color', [0.5 0.5 0.5]);
+            if normalize
+                value = exp{1}.cell(n).norm_value;
+            else
+                value = exp{1}.cell(n).value;
+            end;
+            plot(exp{1}.cell(n).time, value, 'o', 'color', [0.5 0.5 0.5]);
+            clear value;
             % plot(time_interp, norm_ratio_array, 'o', 'color', [0.5 0.5 0.5]);
         end 
         % add the error bar
         plot(time_interp, mean_ratio_array, 'k', 'LineWidth', line_width);
-        std_error = std(ratio_array,0,2) / sqrt(size(norm_ratio_array, 2));
-        add_error_bar(time_interp, mean(ratio_array, 2), std_error,...
+        add_error_bar(time_interp, mean_ratio_array, std_error,...
             'error_bar_interval', error_bar_interval);
         ylabel('Intensity Ratio');
         xlabel('Time (min)'); 
@@ -395,9 +407,13 @@ if ~sum(double(index_0))
     this_ratio = temp; clear temp;
 end;
 
-y_interp = interp1(this_time, this_ratio,time_interp,'pchip');
-y_before = smooth(y_interp(time_interp<=0), smooth_span);
-y_after = smooth(y_interp(time_interp>0), smooth_span); clear y_interp;
+y_interp = interp1(this_time, this_ratio,time_interp,'linear');
+% y_before = smooth(y_interp(time_interp<=0), smooth_span);
+% y_after = smooth(y_interp(time_interp>0), smooth_span); clear y_interp;
+temp = smooth(y_interp(time_interp<=0.5), smooth_span);
+y_before = temp(time_interp<=0); clear temp;
+temp = smooth(y_interp(time_interp>=-0.5), smooth_span); 
+y_after = temp(3:end); clear y_interp temp; % time_interp>0
 y_interp = [y_before; y_after];
 
 % figure; plot(this_time, this_ratio, '+'); hold on; plot(time_interp, y_interp);
