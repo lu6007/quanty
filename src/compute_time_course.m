@@ -9,22 +9,23 @@
 
 function [time, value, data] = compute_time_course(cell_name, data, varargin)
 fprintf('Cell Name : %s\n',cell_name);
-parameter_name = {'save_file', 'load_file', 'subplot_position'};
-default_value = {1, 1, 0};
-[save_file, load_file, subplot_position] =...
+parameter_name = {'save_file', 'load_file', 'save_bw_file', 'subplot_position'};
+default_value = {1, 1, 0, 0};
+[save_file, load_file, save_bw_file, subplot_position] =...
     parse_parameter(parameter_name, default_value, varargin);
 
-
+%Initializing file and location for result.mat (out_file)
 output_path = strcat(data.path, 'output/');
 if isfield(data, 'output_path')
     data.output_path = output_path;
 end
 out_file = strcat(output_path, 'result.mat');
+
 if ~exist(out_file,'file') || load_file ==0
 
     %%% Interface with fluocell %%%
     %%% Main sub-function %%%
-    data = batch_update_figure(data);
+    data = batch_update_figure(data, 'save_bw_file', save_bw_file);
     %%% 
     image_index = (1: max(data.image_index))';
     fret_ratio = data.ratio;
@@ -148,6 +149,7 @@ this_fret_ratio = nan(num_image_index,num_object);
 %Assigns the corresponding fret_ratio value to the matrix.
 for i = 1:num_object
     this_fret_ratio(:,i) = fret_ratio{i}(this_image_index,1);
+%     plot(this_image_index, fret_ratio{i}(this_image_index,1), 'r', 'LineWidth',2);
 end
 
 plot(this_image_index, this_fret_ratio, 'r','LineWidth',2);
