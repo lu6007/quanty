@@ -38,13 +38,14 @@
 function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     parameter_name = {'update_result','enable_plot','i_layer', 'method',...
         'save_excel_file','sheet_name','y_limit_before_norm', 't_limit',...
-        'tag_curve', 'shift', 'enable_average_plot', 'error_bar_interval', 'normalize'};
+        'tag_curve', 'shift', 'enable_interpolation', 'enable_average_plot',...
+        'error_bar_interval', 'normalize'};
     default_value = {0, 1, 1, 1, ...
-        0, '', [0.1 0.8],[], 0, 10, 0, 5, 0};
+        0, '', [0.1 0.8],[],         0, 10, 0, 0,         5, 0};
     [update_result, enable_plot, i_layer, method,...
         save_excel_file, sheet_name, y_limit_before_norm, t_limit,...
-        tag_curve, shift, enable_average_plot, error_bar_interval, normalize] = ...
-    parse_parameter(parameter_name, default_value, varargin);
+        tag_curve, shift, enable_interpolation, enable_average_plot,...
+        error_bar_interval, normalize] = parse_parameter(parameter_name, default_value, varargin);
     % i_layer : default = 1, outer layer
 
     if method ==1 || method ==3 
@@ -102,24 +103,32 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
 
             clear result_file res name_i data_i si_str;
         end; % for i 
+      
     elseif method ==2 % read the time and ratio values from the excel file
         num_exp = 1;
         old_exp = excel_read_curve(file_name);
         exp{1} = old_exp{group_index};
-    %     % pdgf time is saved to the last row of the first time column
-    %     % Need to improve the excel_read_curve function later
-    %     nnn = length(exp{1}.cell(1).time);
-    %     tt = exp{1}.cell(1).time(nnn);
-    %     for j = 1:length(exp{1}.cell)
-    %         exp{1}.cell(j).time = exp{1}.cell(j).time -tt;
-    %     end;
         group_name = exp{1}.name;
+        
+   end; % if method == 1 || method ==3
 
-    end; % if method == 1 || method ==3
-
+    font_size = 24;
+    line_width= 3;
+   if enable_plot
+        figure('color', 'w');
+        time_array = cat(2, exp{1}.cell.time);
+        ratio_array = cat(2, exp{1}.cell.value);
+        plot(time_array, ratio_array, 'LineWidth', line_width);
+        ylabel('Intensity Ratio');
+        xlabel('Time (min)'); 
+        title('Average Plot with Single Cell Data'); axis auto;
+        set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
+        set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
+        clear time_array ratio_array;
+    end;
+  
     %% export to excel files
     if save_excel_file   
-
         file_name = strcat(group.data.path,'../../', 'result.xlsx');
          % Save the original and normalized results
          % Time, Ratio, Time, Ratio at the same length with nan for missing files.   
@@ -151,7 +160,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     end % if save_exel_file
 
 
-    % Preparation for interpolation
+    % Prepare for interpolation
     % If the user did not specify an itnerpolation range, extract
     % information from image data. 
     if isempty(t_limit)   
@@ -195,8 +204,6 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             this_time = exp{i}.cell(j).time(this_image_index);
             this_ratio = exp{i}.cell(j).value(this_image_index);
             ratio_array(:,this_cell) = my_interp(this_time, this_ratio, time_interp);
-%             figure; plot(this_time, this_ratio, 'o'); hold on;
-%             plot(time_interp, ratio_array(:,this_cell),'b');
             this_cell = this_cell+1;
             clear this_cell_name data result_file res this ratio this_image_index;
         end;
@@ -227,7 +234,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
 
 
     % Make plots of the CFP/FRET and Normalized ECFP/FRET ratios
-    if enable_plot
+    if enable_plot  && enable_interpolation
         % Plot the Ratio Arrays
         my_plot(time_interp, ratio_array, ...
             'title_str',  plot_title);
@@ -307,8 +314,6 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     end; % if enable_plot
 
     % plot the average curve with all data ploted as circles
-    font_size = 24;
-    line_width= 3;
     if enable_average_plot
         % stop_index = find(time_interp == last_time_point);
         num_cell = size(norm_ratio_array, 2);
