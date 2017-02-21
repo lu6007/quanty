@@ -54,9 +54,9 @@ end
 close all;
 
 % Supplementary Figure 5
-group_plot(group,'method',1, 'save_excel_file', 1, 'sheet_name', 'Cyto-Fyn');
+group_plot(group,'method',1, 'enable_interpolation', 1, 'save_excel_file', 1, 'sheet_name', 'Cyto-Fyn');
 axis([-15 65 0.8 3.0]);
-group_plot(group,'method',1, 'enable_average_plot', 1);
+group_plot(group,'method',1, 'enable_interpolation', 1, 'enable_average_plot', 1);
 axis([-15 65 0.1 0.8]);
 if enable_pause
     disp(pause_str);

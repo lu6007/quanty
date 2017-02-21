@@ -112,53 +112,66 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         
    end; % if method == 1 || method ==3
 
+  
+    %% Make plots and possibly export to excel files
+     for i = 1:num_exp
+        num_cell = length(exp{i}.cell);
+        num_frame = max(size(exp{i}.cell(1).time,1), size(exp{i}.cell(num_cell).time, 1));
+        time_array = nan(num_frame, num_cell);
+        ratio_array = nan(num_frame, num_cell);
+        norm_ratio_array = nan(num_frame, num_cell);
+        time_ratio_array = nan(num_frame, 2*num_cell);
+        norm_time_ratio_array = nan(num_frame, 2*num_cell);
+
+       for j = 1:num_cell
+            time = exp{i}.cell(j).time;
+            value = exp{i}.cell(j).value;
+            time_array(:,j) = time;
+            ratio_array(:,j) = value;
+            time_ratio_array(:,j*2-1) = time;
+            time_ratio_array(:,j*2) = value;
+
+            before_index = (time>=-15) & (time<=0); 
+            value_before = mean(value(before_index))';
+            norm_ratio_array(:,j) = value/value_before;
+            norm_time_ratio_array(:, j*2-1) = time;
+            norm_time_ratio_array(:, j*2) = value/value_before;
+            clear time value before_index;
+        end;
+    end %for i = 1:num_exp
+    
     font_size = 24;
     line_width= 3;
-   if enable_plot
+    if enable_plot
         figure('color', 'w');
-        time_array = cat(2, exp{1}.cell.time);
-        ratio_array = cat(2, exp{1}.cell.value);
         plot(time_array, ratio_array, 'LineWidth', line_width);
         ylabel('Intensity Ratio');
         xlabel('Time (min)'); 
         title('Average Plot with Single Cell Data'); axis auto;
         set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
         set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
-        clear time_array ratio_array;
-    end;
-  
-    %% export to excel files
-    if save_excel_file   
-        file_name = strcat(group.data.path,'../../', 'result.xlsx');
+        
+        figure('color', 'w');
+        plot(time_array, norm_ratio_array, 'LineWidth', line_width);
+        ylabel('Intensity Ratio');
+        xlabel('Time (min)'); 
+        title('Average Plot with Single Cell Data'); axis auto;
+        set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
+        set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
+     end;
+     clear time_array ratio_array norm_ratio_array;
+
+     if save_excel_file
+         file_name = strcat(group.data.path,'../../', 'result.xlsx');
          % Save the original and normalized results
          % Time, Ratio, Time, Ratio at the same length with nan for missing files.   
-         for i = 1:num_exp
-            num_cell = length(exp{i}.cell);
-            num_frame = size(exp{i}.cell(1).time,1);
-            time_ratio_array = nan(num_frame, 2*num_cell);
-            norm_time_ratio_array = nan(num_frame, 2*num_cell);
-            for j = 1:num_cell
-                time = exp{i}.cell(j).time;
-                value = exp{i}.cell(j).value;
-                time_ratio_array(:,j*2-1) = time;
-                time_ratio_array(:,j*2) = value;
-                
-                before_index = (time>=-15) & (time<=0); 
-                ratio_before = mean(value(before_index))';
-                norm_time_ratio_array(:, j*2-1) = time;
-                norm_time_ratio_array(:, j*2) = value/ratio_before;
-                clear time value before_index;
-            end;
-            % xlswrite(file_name, {'Time (min)', 'Ratio'}, sheet_name, 'A1');
-            original_sheet = strcat(sheet_name, '-', num2str(i));
-            xlswrite(file_name, time_ratio_array, original_sheet, 'A1');
-            norm_sheet = strcat(sheet_name, '-Norm-', num2str(i));
-            xlswrite(file_name, norm_time_ratio_array, norm_sheet, 'A1');
-            clear time_ratio_array original_sheet norm_time_ratio_array norm_sheet;
-        end;
-
-    end % if save_exel_file
-
+        original_sheet = strcat(sheet_name, '-', num2str(i));
+        xlswrite(file_name, time_ratio_array, original_sheet, 'A1');
+        norm_sheet = strcat(sheet_name, '-Norm-', num2str(i));
+        xlswrite(file_name, norm_time_ratio_array, norm_sheet, 'A1');
+    end;
+    clear time_ratio_array original_sheet norm_time_ratio_array norm_sheet;
+        
 
     % Prepare for interpolation
     % If the user did not specify an itnerpolation range, extract
