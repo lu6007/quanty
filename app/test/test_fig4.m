@@ -5,7 +5,9 @@
 %% 
 close all;
 root = 'D:/doc/paper/2016/fluocell_1221/quanty_dataset_2/';
-enable_pause = 1;
+if ~exist('enable_pause', 'var')
+    enable_pause = 1;
+end;
 enable_time = 1;
 
 if enable_time, tic; end
@@ -75,8 +77,8 @@ close all;
 % The excel file 'result-norm.xls' contains the normlized time courses of 
 % the Cytosol and Membrane groups. Need to rename the sheet names from
 % 'Cyto-Fyn' to 'Cytosol', and 'Lyn-Fyn' to 'Membrane' before this works. 
-group_compare(group, 'excel_file', 'result-norm.xls', 'enable_violin_plot', 1, ...
-'group_name', {'Cytosol', 'Membrane'}, 'time_range', [10 20]);
+group_compare(group, 'excel_file', 'result-norm.xlsx', 'enable_violin_plot', 1, ...
+'group_name', {'Cyto-Fyn-Interp', 'Lyn-Fyn-Interp'}, 'time_range', [10 20]);
 p = strcat(group.data.path, '../../pic/');
 h = figure(1); axis([-5 65 0.5 2.5]);
 print(h, strcat(p, 'cyto_mem_plot.tiff'), '-dtiff', '-r300');

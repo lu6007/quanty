@@ -5,7 +5,9 @@
 
 close all;
 root = 'D:/doc/paper/2016/fluocell_1221/quanty_dataset_2/';
-enable_pause = 1;
+if ~exist('enable_pause', 'var')
+    enable_pause = 1;
+end;
 enable_time = 1;
 
 if enable_time, tic; end
