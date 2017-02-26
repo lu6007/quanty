@@ -94,9 +94,9 @@ elseif exist(output_file, 'file') && load_file % group_data is empty
     % make the old and new format compatible, index --> image_index
     if isfield(data,'index')&&~isfield(data,'image_index')
         if size(data.index,1)>1 % transpose row vectors
-            data.image_index = data.index';
+            data.image_index = data.index'; 
         else % copy column vectors
-            data.image_index = data.index;
+            data.image_index = data.index; 
         end;
         data = rmfield(data,'index');
         data.index = fluocell_data.index;

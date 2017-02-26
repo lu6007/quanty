@@ -73,12 +73,16 @@ for n = 1 : length(time_point)
         data_i.show_figure = 1; 
         % Load the exsiting data 
         res = load(out_file);
-        time = res.time;
-        real_time = time(:) - time(1);
-        tmp = abs(real_time - time_point(n));
-        [~, idx] = min(tmp);
+%        time = res.time;
+%         real_time = time(:) - time(1);
+%         tmp = abs(real_time - time_point(n));
+%         [~, idx] = min(tmp);
+        [~, idx] = min(abs(res.time - time_point(n)));
         data_i.index= idx;
         data_i = get_image(data_i,0);
+        if isempty(data_i.im{1}) 
+            continue;
+        end;
         first_channel_im = preprocess(data_i.im{1}, data_i);
         second_channel_im = preprocess(data_i.im{2}, data_i);
         ratio = compute_ratio(first_channel_im, second_channel_im);
@@ -91,7 +95,7 @@ for n = 1 : length(time_point)
         imshow(ratio_fig);
         clear name_i data_i si_str output_path real_time ratio ratio_im;
         clear first_channel_im second_channel_im;
-    end
+    end % for i = 3 : n_list
     
     % Draw a title across all subplot, but not just only one subplot.
     title_string = strcat(num2str(time_point(n)), 'min, ratio bound=', ratio_bd_str); 

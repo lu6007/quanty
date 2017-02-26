@@ -8,6 +8,7 @@ root = 'D:/doc/paper/2016/fluocell_1221/quanty_dataset_2/';
 if ~exist('enable_pause', 'var')
     enable_pause = 1;
 end;
+my = my_function();
 enable_time = 1;
 
 if enable_time, tic; end
@@ -22,11 +23,8 @@ data.first_file = strcat(data.path, '6_w1CFP_s1_t1.TIF');
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
 g2p_quantify(group, 'show_figure', 1, 'load_file', 0, 'save_file',1);
-pause_str = 'test_fig4: paused. Press any key to close current figures and continue.';
-if enable_pause
-    disp(pause_str);
-    pause; 
-end
+pause_str = 'Press any key to close current figures and continue.';
+my.pause(enable_pause, pause_str);
 close all;
 group_plot(group, 'method', 1, 'normalize', 1);
 
@@ -40,10 +38,7 @@ save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
 % g2p_quantify(group, 'show_figure', 1, 'load_file', 0, 'save_file',1);
 g2p_quantify(group, 'show_figure', 1, 'load_file', 1, 'save_file',0);
-if enable_pause
-    disp(pause_str);
-    pause; 
-end
+my.pause(enable_pause, pause_str);
 close all;
 group_plot(group,'method',1, 'enable_interpolation', 1, 'save_excel_file', 1, 'sheet_name', 'Cyto-Fyn');
 axis([-10 65 0.5 3.0]);
@@ -58,10 +53,7 @@ save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
 % g2p_quantify(group, 'show_figure', 1, 'load_file', 0, 'save_file',1);
 g2p_quantify(group, 'show_figure', 1, 'load_file', 1, 'save_file',0);
-if enable_pause
-    disp(pause_str);
-    pause; 
-end
+my.pause(enable_pause, pause_str);
 close all;
 % If the data file does not exist, we can use the GUI to initialize
 % fluocell_data. Then copy to data and save as the data.mat file. 
@@ -69,10 +61,7 @@ group_plot(group,'method',1, 'enable_interpolation', 1, 'save_excel_file', 1, 's
 axis([-10 65 0.5 3.0]);
 % group_plot(group,'method',1, 'enable_average_plot', 1);
 % axis([-10 65 0.5 3.0]);
-if enable_pause
-    disp(pause_str);
-    pause; 
-end
+my.pause(enable_pause, pause_str);
 close all;
 % The excel file 'result-norm.xls' contains the normlized time courses of 
 % the Cytosol and Membrane groups. Need to rename the sheet names from
