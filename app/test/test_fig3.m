@@ -4,7 +4,9 @@
 % only and inlude the last slash to close the folder name. 
 
 close all;
-root = 'D:/doc/paper/2016/fluocell_1221/quanty_dataset_2/';
+if ~exist('root', 'var')
+    root = 'D:/doc/paper/2016/fluocell_1221/quanty_dataset_2/';
+end
 if ~exist('enable_pause', 'var')
     enable_pause = 1;
 end;
@@ -12,6 +14,7 @@ my = my_function();
 enable_time = 1;
 
 if enable_time, tic; end
+load_file = 1; save_file = 0;
 
 %%
 p = strcat(root, 'fig3/test/');
@@ -29,10 +32,12 @@ pause_str = 'Press any key to close current figures and continue.';
 my.pause(enable_pause, pause_str);
 close all;
 group_image_view(group, 'time_point', [1; 25; 50]);
+group_plot(group,'method',1);
 my.pause(enable_pause, pause_str);
-close all;
+
 
 %%
+close all;
 p = strcat(root, 'fig3/0722_cyto-fyn_cblwt_pdgf/');
 data_file = strcat(p, 'output/data.mat');
 load(data_file);
@@ -43,7 +48,7 @@ data.brightness_factor = 0.7;
 data.num_layers = 3;
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
-g2p_quantify(group, 'show_figure', 0, 'load_file', 1, 'save_file',0);
+g2p_quantify(group, 'show_figure', 0, 'load_file', load_file, 'save_file', save_file);
 my.pause(enable_pause, pause_str);
 close all;
 
@@ -70,7 +75,6 @@ data.brightness_factor = 0.7;
 data.num_layers = 3;
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
-% g2p_quantify(group, 'show_figure', 1, 'load_file', 1, 'save_file',0);
-g2p_quantify(group, 'show_figure', 0, 'load_file', 1, 'save_file', 0);
+g2p_quantify(group, 'show_figure', 0, 'load_file', load_file, 'save_file', save_file);
 
 if enable_time, toc; end

@@ -1,17 +1,14 @@
 % function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
 %     parameter_name = {'update_result','enable_plot','i_layer', 'method',...
-%         'save_excel_file','sheet_name','y_limit_before_norm', 't_limit',...
-%         'tag_curve', 'shift', 'enable_average_plot', 'error_bar_interval'};
+%         'save_excel_file','sheet_name','t_limit',...
+%         'enable_interpolation', 'enable_average_plot',...
+%         'error_bar_interval', 'normalize'};
 %     default_value = {0, 1, 1, 1, ...
-%         0, '', [0.1 0.8],[], 0, 10, 0, 5};
-%     [update_result, enable_plot, i_layer, method,...
-%         save_excel_file, sheet_name, y_limit_before_norm, t_limit,...
-%         tag_curve, shift, enable_average_plot, error_bar_interval] = ...
-%     parse_parameter(parameter_name, default_value, varargin);
+%         0, '', [], 0,     0, 5, 0};
 %
 % Example:
-% For method = 1 or 3, load data from fluocell_data
-% and laod the compute_time_course result.mat
+% For method = 1 , load data from fluocell_data
+% and load the compute_time_course result.mat
 % >> group.name = 'p1';
 % >> group.data = data;
 % >> group_plot(group, 'method', 1);
@@ -37,18 +34,18 @@
 
 function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     parameter_name = {'update_result','enable_plot','i_layer', 'method',...
-        'save_excel_file','sheet_name','y_limit_before_norm', 't_limit',...
-        'tag_curve', 'shift', 'enable_interpolation', 'enable_average_plot',...
+        'save_excel_file','sheet_name','t_limit',...
+        'enable_interpolation', 'enable_average_plot',...
         'error_bar_interval', 'normalize'};
     default_value = {0, 1, 1, 1, ...
-        0, '', [0.1 0.8],[],         0, 10, 0, 0,         5, 0};
+        0, '', [], 0,     0, 5, 0};
     [update_result, enable_plot, i_layer, method,...
-        save_excel_file, sheet_name, y_limit_before_norm, t_limit,...
-        tag_curve, shift, enable_interpolation, enable_average_plot,...
-        error_bar_interval, normalize] = parse_parameter(parameter_name, default_value, varargin);
+        save_excel_file, sheet_name, t_limit,enable_interpolation, ... 
+        enable_average_plot, error_bar_interval, normalize] = ...
+        parse_parameter(parameter_name, default_value, varargin);
     % i_layer : default = 1, outer layer
 
-    if method ==1 || method ==3 
+    if method ==1  
         group_name = group.name;
         fprintf('Group Name : %s\n', group_name);
      elseif method ==2  
@@ -56,7 +53,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         group_index = group.index;
     end;
 
-    if method == 1 || method == 3
+    if method == 1 
         % loop through the subfolders and automatically 
         % process the data. 
         data = group.data;
@@ -91,14 +88,14 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             %%%
 
             % Adding for loop to try to adapt group_plot() for multiple objects in one image -Shannon 8/12/2016
-            num_object = length(res.fret_ratio);
+            num_object = length(res.ratio);
             for k = 1:num_object
                 j = j+1;
-               exp{1}.cell(j).time = res.time(res.image_index);
-               % Adapting group_plot() for multiple objects. -Shannon 8/12/2016
-               % i_layer is currently the first (outer) layer or the first roi. 
-                exp{1}.cell(j).value = res.fret_ratio{k}(res.image_index, i_layer);
+%                % Adapting group_plot() for multiple objects. -Shannon 8/12/2016
+%                % i_layer is currently the first (outer) layer or the first roi. 
                 exp{1}.cell(j).this_image_index = res.this_image_index;
+                exp{1}.cell(j).time = res.time;
+                exp{1}.cell(j).value = res.ratio{k}(:,i_layer);
             end
 
             clear result_file res name_i data_i si_str;
@@ -143,21 +140,23 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     font_size = 24;
     line_width= 3;
     if enable_plot
-        figure('color', 'w');
+        h = figure;
         plot(time_array, ratio_array, 'LineWidth', line_width);
         ylabel('Intensity Ratio');
         xlabel('Time (min)'); 
         title('Average Plot with Single Cell Data'); axis auto;
-        set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
-        set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
+        my_figure('handle', h, 'line_width', line_width,'font_size', font_size);
+%         set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
+%         set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
         
-        figure('color', 'w');
+        h = figure;        
         plot(time_array, norm_ratio_array, 'LineWidth', line_width);
         ylabel('Intensity Ratio');
         xlabel('Time (min)'); 
         title('Average Plot with Single Cell Data'); axis auto;
-        set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
-        set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
+        my_figure('handle', h, 'line_width', line_width, 'font_size', font_size);
+%         set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
+%         set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
      end;
      clear time_array ratio_array norm_ratio_array;
 
@@ -248,81 +247,22 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
 
     % Make plots of the CFP/FRET and Normalized ECFP/FRET ratios
     if enable_plot  && enable_interpolation
+        title_str = plot_title;
         % Plot the Ratio Arrays
-        my_plot(time_interp, ratio_array, ...
-            'title_str',  plot_title);
+        h=figure;
+        plot(time_interp, ratio_array, 'LineWidth', line_width);
+        my_figure('handle', h, 'line_width', line_width, 'font_size', font_size);
+        title(regexprep(title_str,'_','\\_'));
+        xlabel('Time (min)');
         ylabel('Intensity Ratio');
-        if tag_curve
-            str = {'Please choose the curves that need to be removed',...
-                'Click the red circle on time axis to finish the process'};
-            title(str); clear str;
-            hold on
-            plot(0, y_limit_before_norm(1), 'ro', 'LineWidth', 3);
-            for n = 1 : length(ratio_array(1,:))
-                index = time_interp == n + shift;
-                plot(n + shift, min(y_limit_before_norm(2) - 0.05, ratio_array(index, n)),...
-                    'ro', 'LineWidth', 3);
-            end 
-            hold off
-            x_index = 1;
-            [x(x_index), ~] = ginput(tag_curve);
-            while(round(x(x_index)) >=  shift)
-                x_index = x_index + 1;
-                [x(x_index), ~] = ginput(tag_curve);
-            end
-            x(length(x)) = [];
-            index_bad_position = round(x) - shift; % the index number of the bad position
-            % list(1).name = '.'; list(2).name = '..';
-            % list(3).name = 6.nd; list(4).name ='output';
-            % So we are ingoring the first 4 folders and index into the 5th
-            % folder directly. This may need to be revised if
-            % input images are not from metamorph. 
-            for ii = 1 : length(index_bad_position)
-                bad_pos{ii}= list(index_bad_position(ii) + 4).name;
-            end
-            % bad_pos = ['p', num2str(nn)];
-            % If bad positions are specified by the user, 
-            % move the files to the output folder.
-            % If there is no bad position, do nothing.
-            if exist('bad_pos', 'var')
-                curve_path = strrep(group.data.path, 'p1', bad_pos);
-                des_path = strrep(group.data.path, 'p1', 'output');
-                if length(bad_pos) == 1
-                    prompt = ['The position chosen here is ', bad_pos{1}, ...
-                        ', Do you want to exclude it? Y/N [N]: '];
-                else
-                    prompt = 'The positions chosen here are ';
-                    for ii = 1 : length(bad_pos) - 1
-                        if length(bad_pos) - 1 == 1
-                            prompt = [prompt, bad_pos{ii}];
-                        else
-                            if ii == length(bad_pos) - 1
-                                prompt = [prompt, bad_pos{ii}];
-                            else
-                                prompt = [prompt, bad_pos{ii}, ', '];
-                            end
-                        end
-                    end
-                    prompt = [prompt, ' and ', bad_pos{length(bad_pos)}, ...
-                        ', Do you want to exclude them? Y/N [N]: '];
-                end
-                str = input(prompt, 's');
-                if isempty(str)
-                    str = 'N';
-                end
-                if strcmp(str, 'Y') || strcmp(str, 'y')
-                    for ii = 1 : length(curve_path)
-                        [~, ~, ~] = movefile(curve_path{ii}, des_path, 'f');
-                    end
-                    norm_ratio_array(:, index_bad_position) = [];
-                    ratio_array(:, index_bad_position) = [];
-                end
-            end
-            my_plot(time_interp, ratio_array, 'title_str',  plot_title);
-                ylabel('Intensity Ratio');
-        end; % if tag_curve
-        my_plot(time_interp, norm_ratio_array, 'title_str',  plot_title);
-        ylabel('Normalized Intensity Ratio');
+
+
+        h=figure;
+        plot(time_interp, norm_ratio_array, 'LineWidth', line_width);
+        my_figure('handle', h, 'line_width', line_width, 'font_size', font_size);
+        title(regexprep(title_str,'_','\\_'));
+        xlabel('Time (min)');
+        ylabel('Norm. Intensity Ratio');
 
     end; % if enable_plot
 
@@ -337,12 +277,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             mean_ratio_array = mean(ratio_array, 2);
             std_error = std(ratio_array, 0, 2)/sqrt(num_cell);
         end;
-        figure('color', 'w');
-        set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
-        set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
-        set(findall(gcf,'type','text'),'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold');
-        % set(gcf, 'Position', [400 400 600 450]); 
-        hold on;
+        h = figure; hold on;
         for n = 1 : length(exp{1, 1}.cell)      
             if normalize
                 value = exp{1}.cell(n).norm_value;
@@ -357,6 +292,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         plot(time_interp, mean_ratio_array, 'k', 'LineWidth', line_width);
         add_error_bar(time_interp, mean_ratio_array, std_error,...
             'error_bar_interval', error_bar_interval);
+        my_figure('handle', h, 'line_width', line_width, 'font_size', font_size);
         ylabel('Intensity Ratio');
         xlabel('Time (min)'); 
         title('Average Plot with Single Cell Data'); axis auto;
@@ -433,25 +369,7 @@ y_before = temp(time_interp<=0); clear temp;
 temp = smooth(y_interp(time_interp>=-0.5), smooth_span); 
 y_after = temp(3:end); clear y_interp temp; % time_interp>0
 y_interp = [y_before; y_after];
-
-% figure; plot(this_time, this_ratio, '+'); hold on; plot(time_interp, y_interp);
-
 return;
 
 
-% Plot the Ratio Array
-function my_plot(x, y, varargin)
-    parameter_name = {'title_str'};
-    default_value ={''};
-    title_str = parse_parameter(parameter_name, default_value, varargin);
-    
-    font_size = 24;
-    figure('color', 'w'); hold on;
-    set(gca, 'LineWidth', 1.5,'FontWeight','bold', 'FontSize', font_size);
-    set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
-    set(findall(gcf,'type','text'),'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold');
-    plot(x, y, 'LineWidth',1.5);
-    
-    title(regexprep(title_str,'_','\\_'));
-    xlabel('Time (min)');
-return;
+

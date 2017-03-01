@@ -30,7 +30,6 @@ for i = 3:n_list
     end;
 end;
 
-
 s1_str = regexprep(name,'p','s');
 if num_folder < num_col
     num_row = 1;

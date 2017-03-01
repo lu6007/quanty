@@ -1,8 +1,9 @@
 % test_fig5.m
 %%
 close all;
-root = 'D:/doc/paper/2016/fluocell_1221/quanty_dataset_2/';
-if ~exist('enable_pause', 'var'), enable_pause = 1; end;
+if ~exist('root', 'var')
+    root = 'D:/doc/paper/2016/fluocell_1221/quanty_dataset_2/';
+endif ~exist('enable_pause', 'var'), enable_pause = 1; end;
 my = my_function;
 enable_time = 1;
 
