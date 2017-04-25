@@ -28,6 +28,8 @@
 % >> group.index = 1;
 % >> group_plot(group, 'method', 2);
 % The excel file has the format "time, ratio, time, ratio, ..., ratio'
+%
+% For method = 4, backward compatible
 
 % Copyright: Shaoying Lu and Yingxiao Wang 2013-2017 
 % Email: shaoying.lu@gmail.com
@@ -45,7 +47,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         parse_parameter(parameter_name, default_value, varargin);
     % i_layer : default = 1, outer layer
 
-    if method ==1  
+    if method ==1 || method == 4
         group_name = group.name;
         fprintf('Group Name : %s\n', group_name);
      elseif method ==2  
@@ -53,7 +55,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         group_index = group.index;
     end;
 
-    if method == 1 
+    if method == 1 || method ==4
         % loop through the subfolders and automatically 
         % process the data. 
         data = group.data;
@@ -88,6 +90,20 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             %%%
 
             % Adding for loop to try to adapt group_plot() for multiple objects in one image -Shannon 8/12/2016
+            if method ==4 % for backward compatibility
+                res.ratio = res.fret_ratio;
+                num_frame = size(res.fret_ratio{1}, 1);
+                time = res.time(1:num_frame, :);
+                cfp_background = res.cfp_background(1:num_frame, :);
+                yfp_background = res.yfp_background(1:num_frame, :);
+                temp = rmfield(res, {'time', 'cfp_background', 'yfp_background'});
+                res = temp; clear temp;
+                res.time = time;
+                res.cfp_background = cfp_background;
+                res.yfp_background = yfp_background;
+                clear time cfp_background yfp_background;
+            end;
+            
             num_object = length(res.ratio);
             for k = 1:num_object
                 j = j+1;
@@ -123,16 +139,17 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
        for j = 1:num_cell
             time = exp{i}.cell(j).time;
             value = exp{i}.cell(j).value;
-            time_array(:,j) = time;
-            ratio_array(:,j) = value;
-            time_ratio_array(:,j*2-1) = time;
-            time_ratio_array(:,j*2) = value;
+            nn = size(time, 1);
+            time_array(1:nn,j) = time;
+            ratio_array(1:nn,j) = value;
+            time_ratio_array(1:nn,j*2-1) = time;
+            time_ratio_array(1:nn,j*2) = value;
 
             before_index = (time>=-15) & (time<=0); 
             value_before = mean(value(before_index))';
-            norm_ratio_array(:,j) = value/value_before;
-            norm_time_ratio_array(:, j*2-1) = time;
-            norm_time_ratio_array(:, j*2) = value/value_before;
+            norm_ratio_array(1:nn,j) = value/value_before;
+            norm_time_ratio_array(1:nn, j*2-1) = time;
+            norm_time_ratio_array(1:nn, j*2) = value/value_before;
             clear time value before_index;
         end;
     end %for i = 1:num_exp
@@ -321,55 +338,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
 
 return;
 
-% Calculate Interpolation
-% (1) Allow the interp_time to be longer than the actual image time
-% Extend the ratio values to both sides horizontally
-% (2) Insert time =0 and average basal value into the time course
-% at 0 min.
-% (3) Smooth the data before and after interpolation seperately. 
-function y_interp = my_interp(x,y, x_interp)
-this_time = x;
-time_interp = x_interp;
-this_ratio = y;
-nn = length(time_interp);
-smooth_span = 40;
 
-if min(this_time)>time_interp(1)
-    temp = [time_interp(1); this_time]; clear this_time;
-    this_time = temp; clear temp;
-    temp = [this_ratio(1,:); this_ratio]; clear this_ratio;
-    this_ratio = temp; clear temp;
-end;
-if max(this_time)<time_interp(nn)
-    temp = [this_time; time_interp(nn)]; clear this_time;
-    this_time = temp; clear temp;
-    temp = [this_ratio; this_ratio(length(this_ratio), :)]; clear this_ratio;
-    this_ratio = temp; clear temp;
-end;
-
-% Insert the 0 min ratio value
-index_before = (this_time < 0);
-index_0 = (this_time == 0);
-index_after = (this_time>0 & this_time<=time_interp(nn));
-average_basal = mean(this_ratio(index_before));
-% if 0 is not in the array this_time,
-% add 0 into the time course
-if ~sum(double(index_0))
-    temp = [this_time(index_before); 0; this_time(index_after)]; clear this_time;
-    this_time = temp; clear temp;
-    temp = [this_ratio(index_before); average_basal; this_ratio(index_after)]; clear this_ratio;
-    this_ratio = temp; clear temp;
-end;
-
-y_interp = interp1(this_time, this_ratio,time_interp,'linear');
-% y_before = smooth(y_interp(time_interp<=0), smooth_span);
-% y_after = smooth(y_interp(time_interp>0), smooth_span); clear y_interp;
-temp = smooth(y_interp(time_interp<=0.5), smooth_span);
-y_before = temp(time_interp<=0); clear temp;
-temp = smooth(y_interp(time_interp>=-0.5), smooth_span); 
-y_after = temp(3:end); clear y_interp temp; % time_interp>0
-y_interp = [y_before; y_after];
-return;
 
 
 
