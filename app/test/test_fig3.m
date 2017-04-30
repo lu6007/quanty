@@ -4,12 +4,10 @@
 % only and inlude the last slash to close the folder name. 
 
 close all;
-if ~exist('root', 'var')
-    root = 'D:/doc/paper/2016/fluocell_1221/quanty_dataset_2/';
-end
+root = '/Users/kathylu/Documents/doc/paper/fluocell_0420/quanty_dataset_2/';
 if ~exist('enable_pause', 'var')
     enable_pause = 1;
-end;
+end
 my = my_function();
 enable_time = 1;
 

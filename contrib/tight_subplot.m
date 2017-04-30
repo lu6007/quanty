@@ -23,19 +23,20 @@ function ha = tight_subplot(Nh, Nw, gap, marg_h, marg_w)
 
 % Pekka Kumpulainen 20.6.2010   @tut.fi
 % Tampere University of Technology / Automation Science and Engineering
+% Modified by Kathy Lu 2017 kalu@ucsd.edu
 
 
 if nargin<3; gap = .02; end
 if nargin<4 || isempty(marg_h); marg_h = .05; end
 if nargin<5; marg_w = .05; end
 
-if numel(gap)==1; 
+if numel(gap)==1 
     gap = [gap gap];
 end
-if numel(marg_w)==1; 
+if numel(marg_w)==1 
     marg_w = [marg_w marg_w];
 end
-if numel(marg_h)==1; 
+if numel(marg_h)==1 
     marg_h = [marg_h marg_h];
 end
 

@@ -27,8 +27,8 @@ for i = 3:n_list
         num_folder = num_folder-1;
     elseif strcmp(list(i).name, 'output')
         num_folder = num_folder-1;
-    end;
-end;
+    end
+end
 
 s1_str = regexprep(name,'p','s');
 if num_folder < num_col
@@ -36,13 +36,14 @@ if num_folder < num_col
     num_col = num_folder;
 else
     num_row = ceil(num_folder / num_col);
-end;
+end
 ratio_bd_str = ['[', num2str(data.ratio_bound(1)),', '  num2str(data.ratio_bound(2)), ']'];
 num_fig = length(findobj('type', 'figure'));
 for n = 1 : length(time_point)
     h = figure(num_fig + n);
     set(h, 'color', 'w');
     fig_ha = tight_subplot(num_row, num_col, [.005 .005],[.01 .1], 0);
+    ii = 0;
     for i = 3 : n_list
         if ~list(i).isdir
             continue;
@@ -51,6 +52,7 @@ for n = 1 : length(time_point)
             continue;
         end
 
+        ii = ii+1;
         name_i = list(i).name;
         data_i = data;
         data_i.path = set_path_i(data.path, name, name_i);
@@ -81,14 +83,14 @@ for n = 1 : length(time_point)
         data_i = get_image(data_i,0);
         if isempty(data_i.im{1}) 
             continue;
-        end;
+        end
         first_channel_im = preprocess(data_i.im{1}, data_i);
         second_channel_im = preprocess(data_i.im{2}, data_i);
         ratio = compute_ratio(first_channel_im, second_channel_im);
         ratio_im = get_imd_image(ratio, max(first_channel_im, second_channel_im), ...
                 'ratio_bound', data_i.ratio_bound, 'intensity_bound', data_i.intensity_bound);
 %         subplot(nRow, 5, i - 4), imshow(ratio_im);
-        axes(fig_ha(i - 4));
+        axes(fig_ha(ii));
         ratio_fig = insertText(ratio_im, [20, 20], name_i, 'Boxcolor', 'Black',...
             'TextColor', 'white', 'FontSize', 48);
         imshow(ratio_fig);

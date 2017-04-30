@@ -18,7 +18,7 @@ default_value = {'result.xlsx', 5, 0, 0, 0, {'G1', 'G2'}, [10 20]};
     enable_violin_plot, load_file, group_name, time_range] = parse_parameter...
     (parameter_name, default_value, varargin);
 excel_file = strcat(group.data.path, '../../',excel_file);
-DeleteEmptyExcelSheets(excel_file);
+% DeleteEmptyExcelSheets(excel_file);
 
 font_size = 24;
 line_width = 3;
@@ -32,7 +32,7 @@ else
     input = load(mat_file);
     group = input.group;
     clear input;
-end;
+end
 
 % Calculate the average and std_error of ratio values.
 num_group = length(group);
@@ -46,7 +46,7 @@ for i = 1:num_group
     num_cells = size(ratio{i}, 2);
     mean_ratio{i} = mean(ratio{i}, 2);
     std_error{i} = std(ratio{i},0,2) / sqrt(num_cells);
-end; % for i
+end % for i
 
 % Lexie on 03/20/2015, extract the time information about how long it will
 % take to reach peak ratio
@@ -94,7 +94,7 @@ for i = 1:num_group
     set(findall(gcf,'type','text'),'FontSize', fs,'FontName','Arial', 'Fontweight', 'bold');
     plot(t1,mr1,'Color', color{i}, 'LineWidth', lw);  
     clear t1 mr1 index index1;
-end;
+end
 
 % Generate the legend str
 % Lexie on 03112015, clickableLegend can control the curve but not the
@@ -102,7 +102,7 @@ end;
 legend_str = 'legend(';
 for i = 1:num_group-1
     legend_str = strcat(legend_str, '''', group{i}.name, '''', ', ');
-end;
+end
 legend_str = strcat(legend_str, '''', group{num_group}.name, '''', ');');
 eval(legend_str);
 
@@ -111,7 +111,7 @@ eval(legend_str);
 for i = 1:num_group
     add_error_bar(time{i}, mean_ratio{i}, std_error{i}, 'error_bar_color', color{i},...
         'error_bar_interva', error_bar_interval);
-end;
+end
 %
 
 % statistics part - t-test, Lexie on 02/23/2015

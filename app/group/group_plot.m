@@ -53,7 +53,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
      elseif method ==2  
         file_name = group.file;
         group_index = group.index;
-    end;
+    end
 
     if method == 1 || method ==4
         % loop through the subfolders and automatically 
@@ -72,19 +72,19 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             % output folder. 
             if ~list(i).isdir % ignore all the files
                 continue;
-            end;
+            end
            data_i = data;
            name_i =list(i).name;
            if strcmp(name_i, 'output') % ingore the output folder
                continue;
-           end;
+           end
 
            data_i.path = set_path_i(data.path, name, name_i); 
            result_file = strcat(data_i.path, 'output/','result.mat');
             if update_result
                 delete(result_file);
                 compute_time_course(name_i, data_i);
-            end;
+            end
             %%%
             res = load(result_file);
             %%%
@@ -102,7 +102,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
                 res.cfp_background = cfp_background;
                 res.yfp_background = yfp_background;
                 clear time cfp_background yfp_background;
-            end;
+            end
             
             num_object = length(res.ratio);
             for k = 1:num_object
@@ -115,15 +115,14 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             end
 
             clear result_file res name_i data_i si_str;
-        end; % for i 
+        end % for i 
       
     elseif method ==2 % read the time and ratio values from the excel file
         num_exp = 1;
         old_exp = excel_read_curve(file_name);
         exp{1} = old_exp{group_index};
-        group_name = exp{1}.name;
-        
-   end; % if method == 1 || method ==3
+        group_name = exp{1}.name;    
+    end % if method == 1 || method ==3
 
   
     %% Make plots and possibly export to excel files
@@ -151,7 +150,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             norm_time_ratio_array(1:nn, j*2-1) = time;
             norm_time_ratio_array(1:nn, j*2) = value/value_before;
             clear time value before_index;
-        end;
+       end
     end %for i = 1:num_exp
     
     font_size = 24;
@@ -174,7 +173,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         my_figure('handle', h, 'line_width', line_width, 'font_size', font_size);
 %         set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
 %         set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
-     end;
+    end
      clear time_array ratio_array norm_ratio_array;
 
      if save_excel_file
@@ -185,7 +184,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         xlswrite(file_name, time_ratio_array, original_sheet, 'A1');
         norm_sheet = strcat(sheet_name, '-Norm-', num2str(i));
         xlswrite(file_name, norm_time_ratio_array, norm_sheet, 'A1');
-    end;
+     end
     clear time_ratio_array original_sheet norm_time_ratio_array norm_sheet;
         
 
@@ -198,13 +197,13 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         while isnan(first_time_point) 
             jj = jj+1;
             first_time_point = exp{1}.cell(jj).time(1); 
-        end;
+        end
         jj = 0;
         last_time_point = exp{1}.cell(1).time(end-jj); % extract the last time point of image data
         while isnan(last_time_point)
             jj = jj+1;
             last_time_point = exp{1}.cell(jj).time(end-jj);
-        end;
+        end
         t_left_limit = ceil(first_time_point); 
         t_right_limit = floor(last_time_point);
         t_limit = [t_left_limit, t_right_limit];
@@ -222,7 +221,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
     num_cell_total =0;
     for i =1:num_exp
         num_cell_total = num_cell_total+ length(exp{i}.cell);
-    end;
+    end
     nn = length(time_interp); % number of time_points
     ratio_array=zeros(nn, num_cell_total);
     this_cell = 1;
@@ -235,8 +234,8 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             ratio_array(:,this_cell) = my_interp(this_time, this_ratio, time_interp);
             this_cell = this_cell+1;
             clear this_cell_name data result_file res this ratio this_image_index;
-        end;
-    end;
+        end
+    end
 
     % Normalized cfp/fret ratio
     norm_ratio_array = zeros(size(ratio_array));
@@ -250,8 +249,8 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             norm_ratio_array(:,this_cell) = ratio_array(:,this_cell)/ratio_before(this_cell);
             exp{i}.cell(j).norm_value = exp{i}.cell(j).value/ratio_before(this_cell);
             this_cell = this_cell+1;
-        end;
-    end;
+        end
+    end
 
     % make the right name for plots, Lexie on 02/19/2015
     if any(strcmp(varargin, 'sheet_name'))
@@ -281,7 +280,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         xlabel('Time (min)');
         ylabel('Norm. Intensity Ratio');
 
-    end; % if enable_plot
+    end % if enable_plot
 
     % plot the average curve with all data ploted as circles
     if enable_average_plot
@@ -293,14 +292,14 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         else
             mean_ratio_array = mean(ratio_array, 2);
             std_error = std(ratio_array, 0, 2)/sqrt(num_cell);
-        end;
+        end
         h = figure; hold on;
         for n = 1 : length(exp{1, 1}.cell)      
             if normalize
                 value = exp{1}.cell(n).norm_value;
             else
                 value = exp{1}.cell(n).value;
-            end;
+            end
             plot(exp{1}.cell(n).time, value, 'o', 'color', [0.5 0.5 0.5]);
             clear value;
             % plot(time_interp, norm_ratio_array, 'o', 'color', [0.5 0.5 0.5]);
@@ -324,7 +323,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             xlswrite(file_name, time_ratio, strcat(sheet_name,'-Interp'));
         else
             xlswrite(file_name, time_ratio);
-        end;
+        end
 
         %%%%%%%%%%%%%%%%%%%%%output the original ratio value
         time_ratio1 = [time_interp ratio_array];
@@ -333,7 +332,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             xlswrite(file_name1, time_ratio1, strcat(sheet_name,'-Interp'));
         else
             xlswrite(file_name1, time_ratio1);
-        end;
+        end
     end % if save_exel_file
 
 return;

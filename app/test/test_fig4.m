@@ -9,7 +9,7 @@ if ~exist('root', 'var')
 end
 if ~exist('enable_pause', 'var')
     enable_pause = 1;
-end;
+end
 pause_str = 'Press any key to close current figures and continue.';
 my = my_function();
 enable_time = 1;
@@ -95,4 +95,4 @@ print(h, strcat(p, 'cyto_mem_plot.tiff'), '-dtiff', '-r300');
 h = figure(2); print(h, strcat(p, 'average_ratio_compare.tiff'), '-dtiff', '-r300');
 h = figure(3); print(h, strcat(p, 'peak_time.tiff'), '-dtiff', '-r300');
 h = figure(4); print(h, strcat(p, 'peak_ratio.tiff'), '-dtiff', '-r300');
-if enable_time, toc; end;
+if enable_time, toc; end
