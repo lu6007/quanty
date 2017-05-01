@@ -52,8 +52,8 @@ if ~exist(out_file,'file') || load_file ==0
     for i = data.image_index
         if i >= 2 && time(i) >= 0 && time(i) < time(i - 1)
             time(i) = time(i) + 24 * 60;
-        end;
-    end; 
+        end
+    end 
     
     % time in minutes PDGF was added 30 seconds before frame (after_pdgf)
     if isfield(data,'pdgf_time')
@@ -65,7 +65,7 @@ if ~exist(out_file,'file') || load_file ==0
         pdgf_time = time(after_pdgf)+0.5;
     else % no pdgf was added
         pdgf_time = time(1)-0.5; % consistent with g2p_init_data
-    end;
+    end
     time = time - pdgf_time; 
 
     ii = ~isnan(time);
@@ -77,13 +77,13 @@ else % if exist(out_file, 'file') && load_file
     intensity =res.intensity;
     ratio = res.ratio;
     value.size = res.value.size;
-end;
+end
 clear path output_path;
 
 
 if save_file
     save(out_file, 'this_image_index', 'time', 'intensity', 'ratio', 'value');
-end;
+end
     
 % beep;
 return;

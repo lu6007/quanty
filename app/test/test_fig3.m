@@ -4,13 +4,13 @@
 % only and inlude the last slash to close the folder name. 
 
 close all;
-root = '/Users/kathylu/Documents/doc/paper/fluocell_0420/quanty_dataset_2/';
 if ~exist('enable_pause', 'var')
     enable_pause = 1;
 end
 my = my_function();
-enable_time = 1;
+root = my.root;
 
+enable_time = 1;
 if enable_time, tic; end
 load_file = 1; save_file = 0;
 
@@ -19,8 +19,8 @@ p = strcat(root, 'fig3/test/');
 data_file = strcat(p, 'output/data.mat'); 
 load(data_file);
 data.path = strcat(p, 'p1/');
-[~,name, ext] = fileparts(data.first_file);
-data.first_file = strcat(data.path, name, ext);
+% [~,name, ext] = fileparts(data.first_file);
+% data.first_file = strcat(data.path, name, ext);
 data.brightness_factor = 0.7;
 data.num_layers = 3;
 save(data_file, 'data');
@@ -40,8 +40,8 @@ p = strcat(root, 'fig3/0722_cyto-fyn_cblwt_pdgf/');
 data_file = strcat(p, 'output/data.mat');
 load(data_file);
 data.path = strcat(p, 'p1/');
-[~,name, ext] = fileparts(data.first_file);
-data.first_file = strcat(data.path, name, ext);
+% [~,name, ext] = fileparts(data.first_file);
+% data.first_file = strcat(data.path, name, ext);
 data.brightness_factor = 0.7;
 data.num_layers = 3;
 save(data_file, 'data');
@@ -67,8 +67,8 @@ p = strcat(root, 'fig3/6position/');
 data_file = strcat(p, 'output/data.mat');
 load(data_file);
 data.path = strcat(p, 'p1/');
-[~,name, ext] = fileparts(data.first_file);
-data.first_file = strcat(data.path, name, ext);
+% [~,name, ext] = fileparts(data.first_file);
+% data.first_file = strcat(data.path, name, ext);
 data.brightness_factor = 0.7;
 data.num_layers = 3;
 save(data_file, 'data');

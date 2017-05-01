@@ -1,5 +1,6 @@
 function my = my_function()
     my.pause = @my_pause;
+    my.root = '/Users/kathylu/Documents/doc/paper/fluocell_0420/quanty_dataset_2/';
 return
 
 function my_pause(enable_pause, pause_str)
@@ -10,7 +11,7 @@ if enable_pause
         disp([fun(2).name, ': paused. ', pause_str]);
     else
         disp([fun(1).name, ': paused. ', pause_str]);
-    end;
+    end
     pause;
 end
 return

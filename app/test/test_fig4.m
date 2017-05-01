@@ -4,26 +4,24 @@
 % only and inlude the last slash to close the folder name.
 %% 
 close all;
-if ~exist('root', 'var')
-    root = 'D:/doc/paper/2016/fluocell_1221/quanty_dataset_2/';
-end
 if ~exist('enable_pause', 'var')
     enable_pause = 1;
 end
 pause_str = 'Press any key to close current figures and continue.';
 my = my_function();
+root = my.root;
 enable_time = 1;
 if enable_time, tic; end
 
 %%
-p = strcat(root, 'fig4/0728/2-test/');
+p = strcat(root, 'fig4/0728/2-test/'); % Lyn-Fyn group
 data_file = strcat(p, 'output/data.mat'); 
 load(data_file);
 data.path = strcat(p, 'p1/');
-data.first_file = strcat(data.path, '6_w1CFP_s1_t1.TIF');
+% data.first_file = strcat(data.path, '6_w1CFP_s1_t1.TIF');
 data.show_detected_boundary = 1;
 data.ratio_bound = [0.1 0.5]; 
-data.brightness_factor = 0.7;
+data.brightness_factor = 0.8;
 data.parallel_processing = 0;
 % data.index_pattern{1} = 't1';
 save(data_file, 'data');
@@ -38,7 +36,7 @@ p = strcat(root, 'fig4/0728/1-Cyto-Fyn-Cbl-wt/');
 data_file = strcat(p, 'output/data.mat'); 
 load(data_file);
 data.path = strcat(p, 'p1/');
-data.first_file = strcat(data.path, '6_w1CFP_s1_t1.TIF');
+% data.first_file = strcat(data.path, '6_w1CFP_s1_t1.TIF');
 data.show_detected_boundary = 1;
 data.ratio_bound = [0.1 0.5]; 
 data.brightness_factor = 0.7; 
@@ -61,10 +59,10 @@ p = strcat(root, 'fig4/0728/2-Lyn-Fyn-Cbl-wt/');
 data_file = strcat(p, 'output/data.mat'); 
 load(data_file);
 data.path = strcat(p, 'p1/');
-data.first_file = strcat(data.path, '6_w1CFP_s1_t1.TIF');
+% data.first_file = strcat(data.path, '6_w1CFP_s1_t1.TIF');
 data.show_detected_boundary = 1;
 data.ratio_bound = [0.1 0.5]; 
-data.brightness_factor = 0.7; 
+data.brightness_factor = 0.8; 
 data.index_pattern{1} = 't1';
 data.parallel_processing = 0;
 save(data_file, 'data');

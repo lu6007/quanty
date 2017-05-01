@@ -43,7 +43,7 @@ else
     end
     num_folder = 3;
     enable_subplot = 0;
-end;
+end
 
 % Loop through the subfolders and
 % start automated processing
@@ -53,11 +53,11 @@ for i = 3: num_folder
     % ignore the 1st and 2nd folders which are ./ ../, and all the files
     if ~list(i).isdir
         continue;
-    end;
+    end
    % ingore the output folder
    if strcmp(list(i).name, 'output') 
        continue;
-   end;
+   end
 
    % if it is a folder, perform quantification
    name_i =list(i).name;
@@ -90,7 +90,7 @@ for i = 3: num_folder
         fn = 2+floor(pos_i/(subm*subn))*num_figure;
         subplot_position = mod(pos_i, subm*subn)+1;
         pos_i = pos_i +1; 
-    end;
+   end
 
     %%% cfp and yfp Intensities over Index figure. %%%
     if ~enable_subplot
@@ -99,7 +99,7 @@ for i = 3: num_folder
         figure(fn+1); 
         subplot(subm,subn,subplot_position); 
         my_figure('handle', fn+1); 
-    end;
+    end
     hold on;
 
     %Problem: cfp_intensity always seems to be AT LEAST two cells long,
@@ -133,7 +133,7 @@ for i = 3: num_folder
         figure(fn+2); 
         subplot(subm,subn,subplot_position); 
         my_figure('handle', fn+2);
-    end;
+    end
     hold on;
     plot(time, 'LineWidth',2);
     title(regexprep(name_i,'_','\\_'));
@@ -146,7 +146,7 @@ for i = 3: num_folder
         figure(fn+3);
         subplot(subm,subn,subplot_position); 
         my_figure('handle', fn+3); 
-    end;
+    end
     hold on;
 
     %Loop for plotting multiple objects. - Shannon 8/9/2016
@@ -173,7 +173,7 @@ for i = 3: num_folder
         figure(fn+4);
         subplot(subm,subn,subplot_position); 
         my_figure('handle', fn+4); 
-    end;
+    end
     hold on;
     plot(time(this_image_index), this_fret_ratio, 'r','LineWidth',2);
     title(regexprep(name_i,'_','\\_'));
@@ -183,7 +183,7 @@ for i = 3: num_folder
 
 
        clear name_i data_i si_str time value;
-end; % for i 
+end % for i 
 
 return;
 

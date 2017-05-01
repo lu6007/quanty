@@ -17,7 +17,7 @@
 % fluocell_data.quantify_roi = 3;
 % group = g2p_init_data(fluocell_data)
 
-% Copyright: Shaoying Lu and Yingxiao Wang 2013 
+% Copyright: Shaoying Lu and Yingxiao Wang 2013-2017 
 % Email: shaoying.lu@gmail.com
 
 function group = g2p_init_data(fluocell_data, varargin)
@@ -36,10 +36,10 @@ if isempty(group_data)
     output_file = strcat(p(1:end-3), 'output/data.mat'); % avoid problem when 'p1/' does not exist
 else
     output_file = strcat(group_data.path(1:end-3), 'output/data.mat');
-end;
+end
 if ~exist(fileparts(output_file), 'dir')
     mkdir(fileparts(output_file));
-end;
+end
 
 % if there is group_data, load group_data
 % if there is no group_data and there is data file, load file
@@ -74,19 +74,19 @@ if ~isempty(group_data)
         pp = temp_pp; clear temp_pp;
     else
         disp('Warning: g2p_init_data - Problem with pdgf_between_frame');
-    end;
+    end
     
     %
     cfp_file = strcat(pp, temp); clear temp;
     
     data.pdgf_time = get_time_2(cfp_file)+ pdgf_time_shift;
-    disp(sprintf('pdgf time = %f sec', data.pdgf_time));
+    fprintf('pdgf time = %f sec\n', data.pdgf_time);
     disp('g2p_init_data: Update group.data from input group_data. ');
 
     if save_data
         disp('g2p_init_data: Update data file from input group_data.');
         save(output_file,'data');
-    end;
+    end
 elseif exist(output_file, 'file') && load_file % group_data is empty
     disp('g2p_init_data: Update from the data file since there is no input of group data. ');
     res = load(output_file);
@@ -97,36 +97,37 @@ elseif exist(output_file, 'file') && load_file % group_data is empty
             data.image_index = data.index'; 
         else % copy column vectors
             data.image_index = data.index; 
-        end;
+        end
         data = rmfield(data,'index');
         data.index = fluocell_data.index;
     elseif ~isfield(data, 'index')
         data.index = fluocell_data.index;
-    end;
+    end
     if isfield(data,'cfp_channel')
         data = rmfield(data,'cfp_channel');
         data = rmfield(data,'yfp_channel');
-    end;
+    end
     if isfield(data,'first_cfp_file')&&~isfield(data,'first_file')
         data.first_file = strcat(data.path,data.first_cfp_file);
         data = rmfield(data,'first_cfp_file');
-    end;
+    end
     % if there is no prefix and postfix, generate them in the group data
     % structure
     if ~isfield(data, 'prefix') && ~isfield(data, 'postfix')
         [~, name, ext] = fileparts(data.first_file);
         data.prefix = name;
         data.postfix = ext;
+        data.first_file = strcat(data.path, data.prefix, data.postfix); 
         clear name ext;
     end
     % Lexie on 05/05/2015
     if ~isfield(data,'output_path')
         data.output_path = fluocell_data.output_path;
-    end;
+    end
     if ~isfield(data,'quantify_roi') || data.quantify_roi == 0
         data.quantify_roi = 3;
         data.num_layers = 3;
-    end;
+    end
     
 elseif exist(strcat(fileparts(output_file),'/../p1/output/data.mat'), 'file')
     % For backward compatibility 09/09/2014
@@ -173,18 +174,18 @@ else % ~exist(output_file, 'file') && isemty(group_data) && load_file = 0;
         temp_pp = regexprep(pp, strcat('\\','p1','\\'), ...
             strcat('\\',jj_p,'\\')); clear pp;
         pp = temp_pp; clear temp_pp;
-    end;
+    end
     
 
 %     cfp_file = strcat(pp, temp); clear temp;
     cfp_file = temp; clear temp;
     data.pdgf_time = get_time_2(cfp_file) + pdgf_time_shift;
-    display(sprintf('pdgf time = %f sec', data.pdgf_time));
+    fprintf('pdgf time = %f sec\n', data.pdgf_time);
     % save data
     if save_data
         save(output_file, 'data');
-    end;
-end; % if ~isempty(group_data),
+    end
+end % if ~isempty(group_data),
 group.data = data;
 
 return
