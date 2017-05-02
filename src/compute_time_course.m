@@ -43,10 +43,6 @@ if ~exist(out_file,'file') || load_file ==0
     intensity{num_object+1, 1} = data.channel1_bg(image_index, :);
     intensity{num_object+1, 2} = data.channel2_bg(image_index, :);
         
-%     if compute_cell_size
-%         cell_size = data.cell_size;
-%     end;
-    
     % Correct the time value when imaging pasts midnight
     time = data.time(image_index,2);
     for i = data.image_index
@@ -57,16 +53,25 @@ if ~exist(out_file,'file') || load_file ==0
     
     % time in minutes PDGF was added 30 seconds before frame (after_pdgf)
     if isfield(data,'pdgf_time')
-        pdgf_time = data.pdgf_time;
+        zero_time = data.pdgf_time;
     elseif isfield(data, 'pdgf_between_frame')
         after_pdgf = data.pdgf_between_frame(2);
-        %%% Note that pdgf time is only correct for position 1, but not
-        %%% accurate for all the rest of positions. 03/04/2014
-        pdgf_time = time(after_pdgf)+0.5;
+        %%% Note that pdgf time is only correct for position 1, but 
+        %%% approximate for all the rest of positions. 03/04/2014
+        zero_time = time(after_pdgf)+0.5;
     else % no pdgf was added
-        pdgf_time = time(1)-0.5; % consistent with g2p_init_data
+        % correct the bug when the first frame was removed. 
+        if ~isnan(time(1))
+            disp('compute_time_course warning: pdgf_time not defined.')
+            disp('Set zero_time = time(1)-0.5');
+            zero_time = time(1)-0.5; % consistent with g2p_init_data
+        else
+            disp('compute_time_course warning: Time(1) is NAN.');
+            disp('Set zero_time = 0');
+            zero_time = 0; 
+        end
     end
-    time = time - pdgf_time; 
+    time = time - zero_time; 
 
     ii = ~isnan(time);
     this_image_index = image_index(ii); 

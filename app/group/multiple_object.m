@@ -249,7 +249,7 @@ classdef multiple_object
                 data = get_image(data, 0);
                 
                 index_str = sprintf(pattern, data.index);
-                file_name = strcat(data.path, 'output\cell_bw.', index_str, '.mat');
+                file_name = strcat(data.path, 'output/cell_bw.', index_str, '.mat');
                 if ~exist(file_name,'file')
                    continue; 
                 end
@@ -299,7 +299,7 @@ classdef multiple_object
                     data.ratio{i}(num_timeframes+1:num_indices,:) = [];
                     data.channel1{i}(num_timeframes+1:num_indices,:) = [];
                     data.channel2{i}(num_timeframes+1:num_indices,:) = [];
-%                     data.cell_size{i}(num_timeframes+1:num_indices,:) = [];
+                    data.cell_size{i}(num_timeframes+1:num_indices,:) = [];
                     %at data.cell_size, "Matrix index is out of range for deletion."
                     %cell_size is not initialized to a longer length like
                     %data.ratio, channel1 and channel2
@@ -308,10 +308,10 @@ classdef multiple_object
                     %data.cell_size{1} is not set to 200 by default.
                     %Lengthens data.cell_size{1} if it is shorter than the
                     %other data.--- variables.
-                    if length(data.cell_size{i}(:)) < num_timeframes
-                        num_indices = length(data.cell_size{i});
-                        data.cell_size{i}(num_indices+1:num_timeframes,:) = nan;
-                    end
+%                     if length(data.cell_size{i}(:)) < num_timeframes
+%                         num_indices = length(data.cell_size{i});
+%                         data.cell_size{i}(num_indices+1:num_timeframes,:) = nan;
+%                     end
                 else
                     %Lengthening truncated tracks. Make new entries NaN
                     data.ratio{i}(num_indices+1:num_timeframes,:) = nan;
