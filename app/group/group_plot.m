@@ -182,8 +182,10 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
          % Time, Ratio, Time, Ratio at the same length with nan for missing files.   
         original_sheet = strcat(sheet_name, '-', num2str(i));
         xlswrite(file_name, time_ratio_array, original_sheet, 'A1');
-        norm_sheet = strcat(sheet_name, '-Norm-', num2str(i));
-        xlswrite(file_name, norm_time_ratio_array, norm_sheet, 'A1');
+        if ~strcmp(computer, 'MACI64') % Mac will output to CSV files without sheet option.
+            norm_sheet = strcat(sheet_name, '-Norm-', num2str(i));
+            xlswrite(file_name, norm_time_ratio_array, norm_sheet, 'A1');
+        end
      end
     clear time_ratio_array original_sheet norm_time_ratio_array norm_sheet;
         
