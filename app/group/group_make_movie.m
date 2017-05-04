@@ -33,25 +33,25 @@ if ~load_file
     str = data_i.prefix(1:temp);
     str = regexprep(str, s1_str, si_str);
     data_i.first_file = strcat(data_i.path, first_file_no_path);
-    if save_file,
+    if save_file
         ratio_folder = [data_i.output_path, ratio_str, '/'];
         if ~isdir(ratio_folder)
             mkdir(ratio_folder);
         end
     end
     ratio_im = cell(max(movie_info.image_index),1);
-    for i = movie_info.image_index,
+    for i = movie_info.image_index
         data_i.index = i;
         data_i = get_image(data_i, 0);
-        if isempty(data_i.im{1}),
+        if isempty(data_i.im{1})
             continue;
-        end;
+        end
         first_channel_im = preprocess(data_i.im{1}, data_i);
         second_channel_im = preprocess(data_i.im{2}, data_i);
         ratio = compute_ratio(first_channel_im, second_channel_im);
         ratio_im{i} = get_imd_image(ratio, max(first_channel_im, second_channel_im), ...
                 'ratio_bound', data_i.ratio_bound, 'intensity_bound', data_i.intensity_bound);
-        if save_file,
+        if save_file
             temp_file = [ratio_folder, str, num2str(i), '.tiff'];
             ratio_file = regexprep(temp_file, data_i.channel_pattern{1}, 'ratio');
             clear temp_file;
@@ -60,8 +60,8 @@ if ~load_file
     end  
 end
 list = dir([movie_info.path, 'output/', ratio_str]);
-if isempty(list) && load_file,
-    display('There is no saved ratio image, please set the "load_file" to be 0.');
+if isempty(list) && load_file
+    disp('There is no saved ratio image, please set the "load_file" to be 0.');
     return;
 end
 %
@@ -88,7 +88,7 @@ while(count < num_frames)
     time(idx) = get_time_2(strcat(movie_info.path, current_file));
     if idx>= 2 && time(idx) >= 0 && time(idx) < time(idx - 1)
         time(idx) = time(idx) + 24 * 60;
-    end; 
+    end
     movie_info.time(idx) = time(idx);
     idx = idx + 1;
     count = count + 1;
