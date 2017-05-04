@@ -1,4 +1,4 @@
-function [ tracks adjacency_tracks A ] = simpletracker(points, varargin)
+function [ tracks, adjacency_tracks, A ] = simpletracker(points, varargin)
 % SIMPLETRACKER  a simple particle tracking algorithm that can deal with gaps
 %
 % *Tracking* , or particle linking, consist in re-building the trajectories

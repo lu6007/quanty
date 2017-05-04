@@ -157,8 +157,8 @@ for i = 3: num_folder
     num_object = length(fret_ratio);
     this_fret_ratio = nan(num_image_index,num_object);
     %Assigns the corresponding fret_ratio value to the matrix.
-    for i = 1:num_object
-        this_fret_ratio(:,i) = fret_ratio{i}(this_image_index,1);
+    for j = 1:num_object
+        this_fret_ratio(:,j) = fret_ratio{j}(this_image_index,1);
     %     plot(this_image_index, fret_ratio{i}(this_image_index,1), 'r', 'LineWidth',2);
     end
 
