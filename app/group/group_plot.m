@@ -146,6 +146,11 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
 
             before_index = (time>=-15) & (time<=0); 
             value_before = mean(value(before_index))';
+            if isnan(value_before) 
+                % find the first non-nan value and use thaat to normalize
+               ii = find(~isnan(value),1); 
+               value_before = value(ii);
+            end
             norm_ratio_array(1:nn,j) = value/value_before;
             norm_time_ratio_array(1:nn, j*2-1) = time;
             norm_time_ratio_array(1:nn, j*2) = value/value_before;
