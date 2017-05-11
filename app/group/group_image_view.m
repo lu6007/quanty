@@ -99,7 +99,7 @@ for n = 1 : length(time_point)
     end % for i = 3 : n_list
     
     % Draw a title across all subplot, but not just only one subplot.
-    title_string = strcat(num2str(time_point(n)), 'min, ratio bound=', ratio_bd_str); 
+    title_string = sprintf('%d min, ratio bound = %s', time_point(n), ratio_bd_str);
     set(gcf,'NextPlot','add'); axes;
     tt = title(title_string);
     set(gca,'Visible','off'); set(tt,'Visible','on');

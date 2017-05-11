@@ -96,6 +96,12 @@ for i = 1:num_group
     clear t1 mr1 index index1;
 end
 
+%add the error bar
+for i = 1:num_group
+    add_error_bar(time{i}, mean_ratio{i}, std_error{i}, 'error_bar_color', color{i},...
+        'error_bar_interva', error_bar_interval);
+end
+%
 % Generate the legend str
 % Lexie on 03112015, clickableLegend can control the curve but not the
 % errorbar
@@ -107,12 +113,6 @@ legend_str = strcat(legend_str, '''', group{num_group}.name, '''', ');');
 eval(legend_str);
 
 
-%add the error bar
-for i = 1:num_group
-    add_error_bar(time{i}, mean_ratio{i}, std_error{i}, 'error_bar_color', color{i},...
-        'error_bar_interva', error_bar_interval);
-end
-%
 
 % statistics part - t-test, Lexie on 02/23/2015
 stat_data= cell(num_group, 1);

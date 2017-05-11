@@ -1,4 +1,5 @@
-% function g2p_init_data, converts the fluocell_data to 
+% function group = g2p_init_data(fluocell_data, varargin)
+% converts the fluocell_data to 
 % the data as input for cell detection and time course computing
 %
 % parameter_name = {'group_data','pdgf_time_shift', 'load_file'};

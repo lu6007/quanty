@@ -1,7 +1,7 @@
 % function g2p_quantify( group, varargin )
 % Quantify the time course of imaging data at multiple positions
 % parameter_name = {'show_figure','position', ...
-%     'save_file', 'load_file', 'save_bw_file', 'num_layer','compute_cell_size'};
+%     'save_file', 'load_file', 'save_bw_file', 'num_layer'};
 % default_value = {1, '', 1, 0, 0, 1, 0};
 %
 % Example:
@@ -17,14 +17,16 @@
 
 function g2p_quantify( group, varargin )
 parameter_name = {'show_figure','position', ...
-    'save_file', 'load_file', 'save_bw_file', 'num_layer','compute_cell_size'};
-default_value = {1, '', 1, 0, 0, 1, 0};
+    'save_file', 'load_file', 'save_bw_file', 'num_layer'};
+default_value = {1, '', 1, 0, 0, 1};
 [show_figure, position, ...
-    save_file, load_file, save_bw_file, num_layer, compute_cell_size] = ...
+    save_file, load_file, save_bw_file, num_layer] = ...
     parse_parameter(parameter_name, default_value, varargin);
 name = group.name;
 group.data.show_figure = show_figure; 
-group.data.num_layer = num_layer;
+if ~isfield(group.data, 'num_layer') || group.data.num_layer == 0
+    group.data.num_layer = num_layer;
+end
 data = group.data;
 % group.data.save_processed_image = 1;
 
@@ -78,8 +80,7 @@ for i = 3: num_folder
    %%% Main sub-function
    [this_image_index, time, intensity, ratio] = ...
        compute_time_course(name_i, data_i, ...
-       'save_file', save_file, 'load_file', load_file, 'save_bw_file', save_bw_file, 'compute_cell_size', ...
-       compute_cell_size);   
+       'save_file', save_file, 'load_file', load_file, 'save_bw_file', save_bw_file);   
 
    % Plotting the quantifications.
    %%% Configuring the subplots. %%%
