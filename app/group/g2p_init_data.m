@@ -127,7 +127,7 @@ elseif exist(output_file, 'file') && load_file % group_data is empty
     end
     if ~isfield(data,'quantify_roi') || data.quantify_roi == 0
         data.quantify_roi = 3;
-        data.num_layers = 3;
+        data.num_layer = 3;
     end
     
 elseif exist(strcat(fileparts(output_file),'/../p1/output/data.mat'), 'file')
@@ -141,7 +141,7 @@ elseif exist(strcat(fileparts(output_file),'/../p1/output/data.mat'), 'file')
 else % ~exist(output_file, 'file') && isemty(group_data) && load_file = 0;
     disp('g2p_init_data: Update from fluocell_data since there is no input of group data or the data file. ');
     disp('g2p_init_data: Please make sure that fluocell is reading images from the p1 position.');
-    data.num_layers  = 1;
+    data.num_layer  = 1;
     data.pdgf_between_frame = fluocell_data.pdgf_between_frame; 
     data.yfp_cbound = [];
     data = fluocell_data;

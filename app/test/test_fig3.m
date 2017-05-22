@@ -68,7 +68,7 @@ data.path = strcat(p, 'p1/');
 % [~,name, ext] = fileparts(data.first_file);
 % data.first_file = strcat(data.path, name, ext);
 data.brightness_factor = 0.7;
-data.num_layers = 3;
+data.num_layer = 3;
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
 g2p_quantify(group, 'show_figure', 0, 'load_file', load_file, 'save_file', save_file);

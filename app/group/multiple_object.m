@@ -323,9 +323,9 @@ classdef multiple_object
             
             for i = data.image_index %double check this
                 for j = 1:num_objects
-                    num_layers = size(data.ratio{j},2);%get the num of subcellular layers
-                    % ^^ Could change this to if-statement for num_layers instead ^^
-                    for k = 1:num_layers
+                    num_layer = size(data.ratio{j},2);%get the num of subcellular layers
+                    % ^^ Could change this to if-statement for num_layer instead ^^
+                    for k = 1:num_layer
                         %Converts any 0 values to NaN.
                         if data.ratio{j}(i,k) == 0
                             data.ratio{j}(i,k) = nan;
