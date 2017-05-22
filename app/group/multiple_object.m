@@ -285,11 +285,11 @@ classdef multiple_object
             % data.channel1, channel2, ratio to 1 x image_index
             % change zeros to NaN
             % shorten the first cell to the length of image_index, instead of 200
-            num_objects = length(data.ratio);
+            num_object = length(data.ratio);
             num_timeframes = length(data.image_index);
             
             %Updating length of each cell that contains an object.
-            for i = 1:num_objects
+            for i = 1:num_object
                 num_indices = length(data.ratio{i});
                 track_length = length(data.ratio{i}(:));
                 
@@ -322,7 +322,7 @@ classdef multiple_object
             end
             
             for i = data.image_index %double check this
-                for j = 1:num_objects
+                for j = 1:num_object
                     num_layer = size(data.ratio{j},2);%get the num of subcellular layers
                     % ^^ Could change this to if-statement for num_layer instead ^^
                     for k = 1:num_layer
