@@ -28,6 +28,8 @@ data.show_detected_boundary = 1;
 data.save_processed_image = 1;
 % data.parallel_processing = 0;
 % data.index_pattern{1} = 't1';
+data.num_figures = 3;
+data.f(3) = figure; 
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
 %

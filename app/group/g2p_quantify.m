@@ -1,7 +1,7 @@
 % function g2p_quantify( group, varargin )
 % Quantify the time course of imaging data at multiple positions
 % parameter_name = {'show_figure','position', ...
-%     'save_file', 'load_file', 'save_bw_file', 'num_layer'};
+%     'save_file', 'load_file', 'save_bw_file', 'num_roi'};
 % default_value = {1, '', 1, 0, 0, 1, 0};
 %
 % Example:
@@ -17,15 +17,15 @@
 
 function g2p_quantify( group, varargin )
 parameter_name = {'show_figure','position', ...
-    'save_file', 'load_file', 'save_bw_file', 'num_layer'};
+    'save_file', 'load_file', 'save_bw_file', 'num_roi'};
 default_value = {1, '', 1, 0, 0, 1};
 [show_figure, position, ...
-    save_file, load_file, save_bw_file, num_layer] = ...
+    save_file, load_file, save_bw_file, num_roi] = ...
     parse_parameter(parameter_name, default_value, varargin);
 name = group.name;
 group.data.show_figure = show_figure; 
-if ~isfield(group.data, 'num_layer') || group.data.num_layer == 0
-    group.data.num_layer = num_layer;
+if ~isfield(group.data, 'num_roi') || group.data.num_roi == 0
+    group.data.num_roi = num_roi;
 end
 data = group.data;
 % group.data.save_processed_image = 1;
