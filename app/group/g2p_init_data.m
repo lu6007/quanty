@@ -28,7 +28,6 @@ default_value = {[], -0.5, 0};
 save_data = 1;
 group.name = 'p1';
 %load_data = 0;
-
 %
 % if group_data is empty, change the path to output and load fluocell_data;
 %
@@ -112,6 +111,10 @@ elseif exist(output_file, 'file') && load_file % group_data is empty
         data.first_file = strcat(data.path,data.first_cfp_file);
         data = rmfield(data,'first_cfp_file');
     end
+    [~,name, ext] = fileparts(data.first_file);
+    data.first_file = strcat(data.path, name, ext);
+    data.output_path = strcat(data.path, 'output/');
+
     % if there is no prefix and postfix, generate them in the group data
     % structure
     if ~isfield(data, 'prefix') && ~isfield(data, 'postfix')
@@ -129,6 +132,14 @@ elseif exist(output_file, 'file') && load_file % group_data is empty
         data.quantify_roi = 3;
         data.num_roi = 3;
     end
+    % backward compatibility, 6/23/2017 --- Kathy
+    if strcmp(data.protocol, 'FRET') && length(data.f) <3
+        data.f(3) = figure; 
+        disp('Save data file for backward compatibility.');
+        save(output_file, 'data');
+    end
+    % end compatibility
+
     
 elseif exist(strcat(fileparts(output_file),'/../p1/output/data.mat'), 'file')
     % For backward compatibility 09/09/2014
