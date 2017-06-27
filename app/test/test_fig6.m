@@ -20,5 +20,6 @@ pause_str = 'Press any key to close current figures and continue.';
 my.pause(enable_pause, pause_str);
 close all;
 data.path = strcat(root, 'fig6/1111_h3k9_3/p2/dconv9/');
+data.num_figure = 3;
 test_3dview(data);
 if enable_time, toc; end
