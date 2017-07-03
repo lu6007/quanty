@@ -2,7 +2,15 @@ classdef multiple_object
     %multiple_object contains functions for tracking multiple objects in
     %one frame.
     methods (Static)
-        function data = simpletracking(data, coordInfo, varargin)
+        function [data, cell_location] = simpletracking(data, coordInfo, varargin)
+            %Parameters
+            %data: fluocell_data
+            %coordInfo: from multiple_object.getCoord()
+            %remove_short_track: boolean
+            %min_track_length: min. num. of timeframes a track must be.
+            %plot_cell_split: boolean
+            %max_distance: max distance a cell can travel between frames.
+            %   Is a percentage of the total image size.
             
             %Initializing parameter/variable values.
             parameter_name = {'remove_short_track', 'min_track_length',...
@@ -14,10 +22,15 @@ classdef multiple_object
                 parse_parameter(parameter_name, default_value, varargin);
             
             %Debug
-            remove_short_track = 1;
-%             min_track_length = 8;
-            plot_cell_split = 1;
-            max_distance = 0.40;            
+%             remove_short_track = 1;
+% %             min_track_length = 8;
+%             plot_cell_split = 1;
+%             max_distance = 0.40;
+            
+            remove_short_track = 0;
+            min_track_length = 1;
+            plot_cell_split = 0;
+            max_distance = 1;
             
             %Convert coordInfo to a data structure that simpletracker can use.
             coordInfo = struct2cell(coordInfo)';
@@ -222,12 +235,42 @@ classdef multiple_object
 %                 num_tracks = num_tracks - k; %Updating value of num_tracks.
                 clear i j k; %Clear counter variables.
             end
+            
+            %% Option for cell_location w/out simpletracking. (For Fluocell paper)
+ %              %Convert coordInfo to a data structure that simpletracker can use.
+ %             coordInfo = struct2cell(coordInfo)';
+ %             numFrames = length(coordInfo);
+ %             d = cell(numFrames,1);
+ %             for i = 1:numFrames
+ %                 d{i,1}=cell2mat(coordInfo(i,:));
+ %             end
+ %             coordInfo = d; 
+ %             clear i d;
+ %             
+ %             % Accounting for empty frames before running simpletracker().
+ % %             removedFramesIndex = find(cellfun('isempty',coordInfo))'; %Getting the indices for empty frames.
+ % %             frameIndex = data.image_index(removedFramesIndex);
+ %             frameIndex = find(~cellfun('isempty',coordInfo))';
+ %             coordInfo = coordInfo(frameIndex);
+ %             
+ %             num_tracks = length(data.ratio);
+ %             temp_location = repmat({nan},size(coordInfo,1),num_tracks);
+ % %             temp_location = cell(size(coordInfo,1),num_tracks);
+ %             
+ %             for i = 1 : numFrames
+ %                 for j = 1 : size(coordInfo{i},1)
+ %                     temp_location{i,j} = coordInfo{i}(j,:);
+ %                 end
+ %             end
+ %             clear i j
           
             %% Exporting the processed data.
             data.ratio = temp_ratio;
             data.channel1 = temp_channel1;
             data.channel2 = temp_channel2;
             data.cell_size = temp_cellSize;
+            
+            cell_location = temp_location;
             
         end
         
@@ -311,6 +354,9 @@ classdef multiple_object
 %                     if length(data.cell_size{i}(:)) < num_timeframes
 %                         num_indices = length(data.cell_size{i});
 %                         data.cell_size{i}(num_indices+1:num_timeframes,:) = nan;
+%                     elseif length(data.cell_size{i}(:)) > num_timeframes
+%                          num_indices = length(data.cell_size{i});
+%                          data.cell_size{i}(num_timeframes+1:num_indices,:) = [];
 %                     end
                 else
                     %Lengthening truncated tracks. Make new entries NaN
@@ -339,6 +385,27 @@ classdef multiple_object
         end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+        
+        function frame_with_track = create_frame_track(cell_location)
+            % Creates frame_with_track to be used with overlay_image_track.
+            
+            %Parameters.
+            fields = {'num_tracks','centroid','track_index'};
+            num_fields = length(fields);
+            num_frames = length(cell_location);
+            
+            %Initialize cell to hold data.
+            frame_with_track = cell(num_frames, num_fields);
+            frame_with_track = cell2struct(frame_with_track, fields, 2);
+            
+            for i = 1 : num_frames
+                frame_with_track(i).num_tracks = sum(~cellfun(@(V) any(isnan(V(:))),cell_location(i,:)));
+                for j = 1 : frame_with_track(i).num_tracks
+                    frame_with_track(i).centroid(j,:) = cell_location{i,j};
+                    frame_with_track(i).track_index(j,1) = j;
+                end
+            end
+        end
+        
     end
 end
