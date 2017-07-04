@@ -9,16 +9,17 @@ classdef multiple_object
             %remove_short_track: boolean
             %min_track_length: min. num. of timeframes a track must be.
             %plot_cell_split: boolean
-            %max_distance: max distance a cell can travel between frames.
+            %max_distance: max distance between cells for cell splitting
+            %detection
             %   Is a percentage of the total image size.
             
             %Initializing parameter/variable values.
             parameter_name = {'remove_short_track', 'min_track_length',...
-                'plot_cell_split','max_distance'};
+                'plot_cell_split','max_distance','output_cell_location'};
             default_min_track_length = ceil(0.5*length(coordInfo));
-            default_value = {0, default_min_track_length, 0, 0.40};
+            default_value = {0, default_min_track_length, 0, 0.40,0};
             [remove_short_track, min_track_length,...
-                plot_cell_split, max_distance] =...
+                plot_cell_split, max_distance, output_cell_location] =...
                 parse_parameter(parameter_name, default_value, varargin);
             
             %Debug
@@ -208,7 +209,6 @@ classdef multiple_object
                                     end
                                 end
                                 
-                                
                                 break;
                             end
                         end
@@ -237,32 +237,33 @@ classdef multiple_object
             end
             
             %% Option for cell_location w/out simpletracking. (For Fluocell paper)
- %              %Convert coordInfo to a data structure that simpletracker can use.
- %             coordInfo = struct2cell(coordInfo)';
- %             numFrames = length(coordInfo);
- %             d = cell(numFrames,1);
- %             for i = 1:numFrames
- %                 d{i,1}=cell2mat(coordInfo(i,:));
- %             end
- %             coordInfo = d; 
- %             clear i d;
- %             
- %             % Accounting for empty frames before running simpletracker().
- % %             removedFramesIndex = find(cellfun('isempty',coordInfo))'; %Getting the indices for empty frames.
- % %             frameIndex = data.image_index(removedFramesIndex);
- %             frameIndex = find(~cellfun('isempty',coordInfo))';
- %             coordInfo = coordInfo(frameIndex);
- %             
- %             num_tracks = length(data.ratio);
- %             temp_location = repmat({nan},size(coordInfo,1),num_tracks);
- % %             temp_location = cell(size(coordInfo,1),num_tracks);
- %             
- %             for i = 1 : numFrames
- %                 for j = 1 : size(coordInfo{i},1)
- %                     temp_location{i,j} = coordInfo{i}(j,:);
- %                 end
- %             end
- %             clear i j
+            %Convert coordInfo to a data structure that simpletracker can use.
+            if output_cell_location
+                numCoordFrames = length(coordInfo);
+                d = cell(numCoordFrames,1);
+                for i = 1:numCoordFrames
+                    d{i,1}=cell2mat(coordInfo(i,:));
+                end
+                coordInfo = d;
+                clear i d;
+                
+                % Accounting for empty frames before running simpletracker().
+                % removedFramesIndex = find(cellfun('isempty',coordInfo))'; %Getting the indices for empty frames.
+                % frameIndex = data.image_index(removedFramesIndex);
+                frameIndex = find(~cellfun('isempty',coordInfo))';
+                coordInfo = coordInfo(frameIndex);
+                
+                num_tracks = length(data.ratio);
+                temp_location = repmat({nan},size(coordInfo,1),num_tracks);
+                % temp_location = cell(size(coordInfo,1),num_tracks);
+                
+                for i = 1 : numCoordFrames
+                    for j = 1 : size(coordInfo{i},1)
+                        temp_location{i,j} = coordInfo{i}(j,:);
+                    end
+                end
+                clear i j
+            end
           
             %% Exporting the processed data.
             data.ratio = temp_ratio;
