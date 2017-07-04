@@ -99,7 +99,7 @@ end
 %add the error bar
 for i = 1:num_group
     add_error_bar(time{i}, mean_ratio{i}, std_error{i}, 'error_bar_color', color{i},...
-        'error_bar_interva', error_bar_interval);
+        'error_bar_interval', error_bar_interval);
 end
 %
 % Generate the legend str
