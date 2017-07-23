@@ -15,17 +15,14 @@ if enable_time, tic; end
 
 %%
 p = strcat(root, 'fig4/0728/2-test/'); % Lyn-Fyn group
+data = load_data(p);
 data_file = strcat(p, 'output/data.mat'); 
-load(data_file);
 data.path = strcat(p, 'p1/');
-% data.first_file = strcat(data.path, '6_w1CFP_s1_t1.TIF');
 data.show_detected_boundary = 1;
 data.ratio_bound = [0.1 0.5]; 
 data.brightness_factor = 0.8;
 data.parallel_processing = 0;
 % data.index_pattern{1} = 't1';
-% data.num_figures = 3;
-% data.f(3) = figure; 
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
 g2p_quantify(group, 'show_figure', 1, 'load_file', 0, 'save_file',1);
@@ -35,16 +32,13 @@ group_plot(group, 'method', 1, 'normalize', 1);
 
 %%
 p = strcat(root, 'fig4/0728/1-Cyto-Fyn-Cbl-wt/');
+data = load_data(p);
 data_file = strcat(p, 'output/data.mat'); 
-load(data_file);
 data.path = strcat(p, 'p1/');
-% data.first_file = strcat(data.path, '6_w1CFP_s1_t1.TIF');
 data.show_detected_boundary = 1;
 data.ratio_bound = [0.1 0.5]; 
-data.brightness_factor = 0.7; 
-data.parallel_processing = 0;
-% data.num_figures = 3;
-% data.f(3) = figure; 
+data.brightness_factor = 0.7;  
+data.parallel_processing = 0; 
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
 g2p_quantify(group, 'show_figure', 0, 'load_file', 1, 'save_file', 0);
@@ -60,17 +54,14 @@ group_image_view(group, 'time_point', [-1; 25]);
 
 %%
 p = strcat(root, 'fig4/0728/2-Lyn-Fyn-Cbl-wt/');
+data = load_data(p);
 data_file = strcat(p, 'output/data.mat'); 
-load(data_file);
 data.path = strcat(p, 'p1/');
-% data.first_file = strcat(data.path, '6_w1CFP_s1_t1.TIF');
 data.show_detected_boundary = 1;
 data.ratio_bound = [0.1 0.5]; 
 data.brightness_factor = 0.8; 
 data.index_pattern{1} = 't1';
 data.parallel_processing = 0;
-% data.num_figures = 3;
-% data.f(3) = figure; 
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
 g2p_quantify(group, 'show_figure', 0, 'load_file', 1, 'save_file', 0);
