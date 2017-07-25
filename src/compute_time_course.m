@@ -45,7 +45,7 @@ if ~exist(out_file,'file') || load_file ==0
         
     % Correct the time value when imaging pasts midnight
     time = data.time(image_index,2);
-    for i = data.image_index
+    for i = (data.image_index)'
         if i >= 2 && time(i) >= 0 && time(i) < time(i - 1)
             time(i) = time(i) + 24 * 60;
         end

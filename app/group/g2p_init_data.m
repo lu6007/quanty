@@ -14,7 +14,7 @@
 % Example:
 % name = 'p1';
 % fluocell_data.pdgf_between_frame = [7; 8];
-% fluocell_data.image_index = [1:14 16];
+% fluocell_data.image_index = [1:14 16]';
 % fluocell_data.quantify_roi = 3;
 % group = g2p_init_data(fluocell_data)
 
@@ -93,7 +93,7 @@ elseif exist(output_file, 'file') && load_file % group_data is empty
     data = res.data;
     % make the old and new format compatible, index --> image_index
     if isfield(data,'index')&&~isfield(data,'image_index')
-        if size(data.index,1)>1 % transpose row vectors
+        if size(data.index,2)>1 % transpose row vectors
             data.image_index = data.index'; 
         else % copy column vectors
             data.image_index = data.index; 

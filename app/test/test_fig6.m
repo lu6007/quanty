@@ -11,7 +11,7 @@ if enable_time, tic; end
 %%
 p = strcat(root, 'fig3/0722_cyto-fyn_cblwt_pdgf/');
 data_file = strcat(p, 'output/data.mat');
-load(data_file);
+data = load_data(p);
 group = g2p_init_data(data, 'load_file', 1);
 group_make_movie(group, 'position', 'p3', 'stimulus_info', 'PDGF');
 

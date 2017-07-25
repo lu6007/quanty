@@ -22,16 +22,16 @@ classdef multiple_object
                 plot_cell_split, max_distance, output_cell_location] =...
                 parse_parameter(parameter_name, default_value, varargin);
             
-            %Debug
+            %Debug multiple_object.simpletracking() parameters
 %             remove_short_track = 1;
 % %             min_track_length = 8;
 %             plot_cell_split = 1;
 %             max_distance = 0.40;
-            
-            remove_short_track = 0;
-            min_track_length = 1;
-            plot_cell_split = 0;
-            max_distance = 1;
+                   
+            %Debug simpletracker parameters
+%             maxLinkingDistance = 500;
+%             maxGapClosing = 3;
+%             debug = true;
             
             %Convert coordInfo to a data structure that simpletracker can use.
             coordInfo = struct2cell(coordInfo)';
@@ -50,9 +50,6 @@ classdef multiple_object
             coordInfo = coordInfo(frameIndex);
             
             % Running simpletracker.
-            maxLinkingDistance = 500;
-            maxGapClosing = 3;
-            debug = true;
             [ tracks, adjacency_tracks ] = simpletracker(coordInfo,...
                 'MaxLinkingDistance', maxLinkingDistance, ...
                 'MaxGapClosing', maxGapClosing, ...
@@ -282,18 +279,21 @@ classdef multiple_object
             % as a data structure. Fields are 'xCoord' and 'yCoord'.
             
             pattern = data.index_pattern{2};
+%             pattern = 't%d';
+
             % initialize movie_info
-            num_frames = length(data.image_index);
+            num_frame = length(data.image_index);
             field = {'xCoord', 'yCoord'};
             num_fields = length(field);
-            c = cell(num_frames, num_fields);
+            c = cell(num_frame, num_fields);
                         
-            for k = data.image_index                
+            for k = (data.image_index)'                
                 data.index = data.image_index(k);
                 data = get_image(data, 0);
                 
                 index_str = sprintf(pattern, data.index);
                 file_name = strcat(data.path, 'output/cell_bw.', index_str, '.mat');
+
                 if ~exist(file_name,'file')
                    continue; 
                 end
@@ -330,20 +330,20 @@ classdef multiple_object
             % change zeros to NaN
             % shorten the first cell to the length of image_index, instead of 200
             num_object = length(data.ratio);
-            num_timeframes = length(data.image_index);
+            num_timeframe = length(data.image_index);
             
             %Updating length of each cell that contains an object.
             for i = 1:num_object
                 num_indices = length(data.ratio{i});
                 track_length = length(data.ratio{i}(:));
                 
-                %Truncates data.--- if it is longer than num_timeframes.
+                %Truncates data.--- if it is longer than num_timeframe.
                 %Currently, data.---{1} is set to 200 by default.
-                if track_length > num_timeframes
-                    data.ratio{i}(num_timeframes+1:num_indices,:) = [];
-                    data.channel1{i}(num_timeframes+1:num_indices,:) = [];
-                    data.channel2{i}(num_timeframes+1:num_indices,:) = [];
-                    data.cell_size{i}(num_timeframes+1:num_indices,:) = [];
+                if track_length > num_timeframe
+                    data.ratio{i}(num_timeframe+1:num_indices,:) = [];
+                    data.channel1{i}(num_timeframe+1:num_indices,:) = [];
+                    data.channel2{i}(num_timeframe+1:num_indices,:) = [];
+                    data.cell_size{i}(num_timeframe+1:num_indices,:) = [];
                     %at data.cell_size, "Matrix index is out of range for deletion."
                     %cell_size is not initialized to a longer length like
                     %data.ratio, channel1 and channel2
@@ -352,7 +352,7 @@ classdef multiple_object
                     %data.cell_size{1} is not set to 200 by default.
                     %Lengthens data.cell_size{1} if it is shorter than the
                     %other data.--- variables.
-%                     if length(data.cell_size{i}(:)) < num_timeframes
+%                     if length(data.cell_size{i}(:)) < num_timeframe
 %                         num_indices = length(data.cell_size{i});
 %                         data.cell_size{i}(num_indices+1:num_timeframes,:) = nan;
 %                     elseif length(data.cell_size{i}(:)) > num_timeframes
@@ -361,14 +361,14 @@ classdef multiple_object
 %                     end
                 else
                     %Lengthening truncated tracks. Make new entries NaN
-                    data.ratio{i}(num_indices+1:num_timeframes,:) = nan;
-                    data.channel1{i}(num_indices+1:num_timeframes,:) = nan;
-                    data.channel2{i}(num_indices+1:num_timeframes,:) = nan;
-                    data.cell_size{i}(num_indices+1:num_timeframes,:) = nan;
+                    data.ratio{i}(num_indices+1:num_timeframe,:) = nan;
+                    data.channel1{i}(num_indices+1:num_timeframe,:) = nan;
+                    data.channel2{i}(num_indices+1:num_timeframe,:) = nan;
+                    data.cell_size{i}(num_indices+1:num_timeframe,:) = nan;
                 end
             end
             
-            for i = data.image_index %double check this
+            for i = (data.image_index)'
                 for j = 1:num_object
                     num_roi = size(data.ratio{j},2);%get the num of subcellular layers
                     % ^^ Could change this to if-statement for num_roi instead ^^

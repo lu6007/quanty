@@ -8,7 +8,8 @@ default_value = {'p1', 0, 'FRET', 0, 1, '', ''};
     = parse_parameter(parameter_name, default_value, varargin);
 
 data = group.data;
-movie_info.path = regexprep(data.path, 'p1', position);
+% movie_info.path = regexprep(data.path, position,'/');
+movie_info.path = strcat(data.path, position, '/');
 movie_info.movie_name = [movie_info.path, 'output/', movie_name];
 movie_info.image_index = data.image_index;
 movie_info.index_pattern = data.index_pattern;
@@ -40,7 +41,7 @@ if ~load_file
         end
     end
     ratio_im = cell(max(movie_info.image_index),1);
-    for i = movie_info.image_index
+    for i = (movie_info.image_index)'
         data_i.index = i;
         data_i = get_image(data_i, 0);
         if isempty(data_i.im{1})

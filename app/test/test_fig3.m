@@ -16,13 +16,11 @@ load_file = 1; save_file = 0;
 
 %%
 p = strcat(root, 'fig3/test/');
+data = load_data(p);
 data_file = strcat(p, 'output/data.mat'); 
-load(data_file);
 data.path = strcat(p, 'p1/');
 data.brightness_factor = 0.7;
 data.num_roi = 3;
-% data.num_figures = 3;
-% data.f(3) = figure; 
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
 g2p_quantify(group, 'show_figure', 1, 'load_file', 0, 'save_file', 1);
@@ -38,14 +36,10 @@ my.pause(enable_pause, pause_str);
 close all;
 p = strcat(root, 'fig3/0722_cyto-fyn_cblwt_pdgf/');
 data_file = strcat(p, 'output/data.mat');
-load(data_file);
+data = load_data(p);
 data.path = strcat(p, 'p1/');
-% [~,name, ext] = fileparts(data.first_file);
-% data.first_file = strcat(data.path, name, ext);
 data.brightness_factor = 0.7;
 data.num_roi = 3;
-% data.num_figures = 3;
-% data.f(3) = figure; 
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
 g2p_quantify(group, 'show_figure', 0, 'load_file', load_file, 'save_file', save_file);
@@ -66,11 +60,9 @@ close all;
 
 %%
 p = strcat(root, 'fig3/6position/');
+data = load_data(p);
 data_file = strcat(p, 'output/data.mat');
-load(data_file);
 data.path = strcat(p, 'p1/');
-% [~,name, ext] = fileparts(data.first_file);
-% data.first_file = strcat(data.path, name, ext);
 data.brightness_factor = 0.7;
 data.num_roi = 3;
 save(data_file, 'data');
