@@ -300,7 +300,7 @@ classdef multiple_object
                 data = get_image(data, 0);
                 
                 index_str = sprintf(pattern, data.index);
-                file_name = strcat(data.path, 'output/cell_bw.', index_str, '.mat');
+                file_name = strcat(data.path, 'output/cell_bw_', index_str, '.mat');
 
                 if ~exist(file_name,'file')
                    continue; 
