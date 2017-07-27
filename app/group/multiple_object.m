@@ -28,9 +28,12 @@ classdef multiple_object
 %             plot_cell_split = 1;
 %             max_distance = 0.40;
                    
-            %Debug simpletracker parameters
-%             maxLinkingDistance = 500;
-%             maxGapClosing = 3;
+            %simpletracker parameters
+            maxLinkingDistance = 5000;
+            maxGapClosing = 3;
+            debug = true;
+%             maxLinkingDistance = 500000;
+%             maxGapClosing = 30;
 %             debug = true;
             
             %Convert coordInfo to a data structure that simpletracker can use.
@@ -44,9 +47,14 @@ classdef multiple_object
             clear i d;
             
             % Accounting for empty frames before running simpletracker().
-            removedFramesIndex = find(cellfun('isempty',coordInfo))'; %Getting the indices for empty frames.
-%             frameIndex = data.image_index(removedFramesIndex);
-            frameIndex = find(~cellfun('isempty',coordInfo))';
+%             removedFramesIndex = find(cellfun('isempty',coordInfo))'; %Getting the indices for empty frames.
+% %             frameIndex = data.image_index(removedFramesIndex);
+%             frameIndex = find(~cellfun('isempty',coordInfo))';
+%             coordInfo = coordInfo(frameIndex);
+            
+            removedFramesIndex = get_data.nonexistant_frames(data); %Getting the indices for empty frames.
+            image_index = data.image_index;
+            frameIndex = image_index(~ismember(image_index,removedFramesIndex));
             coordInfo = coordInfo(frameIndex);
             
             % Running simpletracker.
@@ -125,7 +133,7 @@ classdef multiple_object
                            temp_cellSize{b}(j,1) = nan;
                            temp_location{j,b} = nan;
                        end
-                   %Save NaN value if 'tracks' was NaN at frame number 'j'.
+                   %Save NaN value if 'tracks' from simpletracker was NaN at frame number 'j'.
                    elseif isnan(tracks{i}(trackIndex))
                        temp_ratio{i}(j,1) = nan;
                        temp_channel1{i}(j,1) = nan;
@@ -310,9 +318,10 @@ classdef multiple_object
                     continue;
                 end
                 clear first_file_path second_file_path
-                
-                c{k,1} = object_centroid(:,1);
-                c{k,2} = object_centroid(:,2);
+                if ~isempty(object_centroid)
+                    c{k,1} = object_centroid(:,1);
+                    c{k,2} = object_centroid(:,2);
+                end
                 clear im_fak im_object im_ratio object_centroid object_total_intensity object_label...
                     object_prop object_bd fak_total_intensity pax_total_intensity z
             end % for k = 1:5
