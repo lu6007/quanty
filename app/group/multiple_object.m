@@ -21,9 +21,9 @@ classdef multiple_object
             
             %Convert coordInfo to a data structure that simpletracker can use.
             coordInfo = struct2cell(coordInfo)';
-            numFrames = length(coordInfo);
-            d = cell(numFrames,1);
-            for i = 1:numFrames
+            numFrame = length(coordInfo);
+            d = cell(numFrame,1);
+            for i = 1:numFrame
                 d{i,1}=cell2mat(coordInfo(i,:));
             end
             coordInfo = d; 
@@ -48,15 +48,15 @@ classdef multiple_object
             %Concatenate data the same way that simpletracker concatenates.
             
             %Initialize new data.ratio, channel1, channel2, etc.
-            %num_tracks is the number of objects that simpletracker has determined!
-            num_tracks = numel(tracks);
+            %num_track is the number of objects that simpletracker has determined!
+            num_track = numel(tracks);
             
             %Initialize temp variables.
-            temp_ratio = cell(1,num_tracks);
-            temp_channel1 = cell(1,num_tracks);
-            temp_channel2 = cell(1,num_tracks);
-            temp_cellSize = cell(1,num_tracks);
-            temp_location = cell(size(coordInfo,1),num_tracks);
+            temp_ratio = cell(1,num_track);
+            temp_channel1 = cell(1,num_track);
+            temp_channel2 = cell(1,num_track);
+            temp_cellSize = cell(1,num_track);
+            temp_location = cell(size(coordInfo,1),num_track);
             
             %Initialize variables.
             dataRatio = [];
@@ -78,7 +78,7 @@ classdef multiple_object
             end; clear i;
             
             %Concatenating values.
-            for i = 1:numFrames
+            for i = 1:numFrame
                 allRatio = [allRatio horzcat(dataRatio(i,:))];
                 allChannel1 = [allChannel1 horzcat(dataChannel1(i,:))];
                 allChannel2 = [allChannel2 horzcat(dataChannel2(i,:))];
@@ -100,14 +100,14 @@ classdef multiple_object
 
             %% Reformatting the data using information from simpletracker(), Part 2 of 2.
             %Reformat data using tracking information from simpletracker().
-            for i = 1:num_tracks
+            for i = 1:num_track
                %Account for the different row indexing of tracks and adjacency_tracks.
                trackIndex = 1;
                adjIndex = 1;
-               for j = 1:numFrames
+               for j = 1:numFrame
                    %Adding NaN values where a frame was removed.
                    if any(removedFramesIndex == j)
-                       for b = 1:num_tracks
+                       for b = 1:num_track
                            temp_ratio{b}(j,1) = nan;
                            temp_channel1{b}(j,1) = nan;
                            temp_channel2{b}(j,1) = nan;
@@ -141,17 +141,17 @@ classdef multiple_object
             %Check cell size - seems to shrink ~half about 1-3 frames before split
             %Check cell location - ensure new and old cells are sufficiently close
             if plot_cell_split == 1
-                if num_tracks > 1                    
-                    track_cell_size = nan(numFrames,num_tracks);
-                    for k = 1:num_tracks
+                if num_track > 1                    
+                    track_cell_size = nan(numFrame,num_track);
+                    for k = 1:num_track
                         track_cell_size(:,k) = temp_cellSize{k}(:);
                     end
                     clear k;
-                    for i = 1:num_tracks
+                    for i = 1:num_track
                         %Will only run splitting detection if a cell was not present in
                         %the first frame.
                         if isnan(temp_ratio{i}(1))
-                            for j = 2:numFrames
+                            for j = 2:numFrame
                                 %continue if current frame has NaN value in this track
                                 if isnan(temp_ratio{i}(j))
                                     continue;
@@ -208,7 +208,7 @@ classdef multiple_object
             %Function parameter: min_track_length >> default = 2
             if remove_short_track == 1
                 k = 0; %Initialize for tracking the number of removed tracks.
-                for i = 1:num_tracks
+                for i = 1:num_track
                     j = i - k; %Update index to account for removed tracks.
                     %Check if the track is shorter than the min track length.
                     if sum(~isnan(temp_ratio{j})) <= min_track_length
@@ -219,7 +219,7 @@ classdef multiple_object
                         k = k + 1; %Number of removed tracks.
                     end
                 end
-%                 num_tracks = num_tracks - k; %Updating value of num_tracks.
+%                 num_track = num_track - k; %Updating value of num_track.
                 clear i j k; %Clear counter variables.
             end
           

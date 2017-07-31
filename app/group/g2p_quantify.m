@@ -10,7 +10,7 @@
 % g2p_quantify(group,'show_figure', 0)
 %
 % To quantify for only 1 position, use
-% g2p_quantify(group, 'show_figure', 0, 'name_i', 'p8');
+% g2p_quantify(group, 'show_figure', 0, 'position', 'p8');
 
 % Copyright: Shaoying Lu, Ya Gong and Yingxiao Wang 2013 
 % Email: shaoying.lu@gmail.com
