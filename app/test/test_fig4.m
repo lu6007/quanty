@@ -25,7 +25,7 @@ data.parallel_processing = 0;
 % data.index_pattern{1} = 't1';
 save(data_file, 'data');
 group = g2p_init_data(data, 'load_file', 1);
-gg2p_quantify(group, 'show_figure', 1, 'load_file', 0, 'save_file',1);
+g2p_quantify(group, 'show_figure', 1, 'load_file', 0, 'save_file',1);
 my.pause(enable_pause, pause_str);
 close all;
 group_plot(group, 'method', 1, 'normalize', 1);
