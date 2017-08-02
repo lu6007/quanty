@@ -13,15 +13,38 @@ classdef multiple_object
             %detection
             %   Is a percentage of the total image size.
             
+            % Priority of parameter values: (1) function input 
+            % (2) data.track_option (3) default values
+            default_remove_short_track = 0;
+            default_min_track_length = ceil(0.5*length(coordInfo));
+            default_plot_cell_split= 0;
+            default_max_distance = 0.40;
+            default_output_cell_location = 0;
+            
+            if isfield(data, 'track_option') 
+                track_option = data.track_option;
+                if isfield(track_option, 'remove_short_track')
+                    default_remove_short_track = track_option.remove_short_track;
+                    if ~isempty(track_option.min_track_length)
+                        default_min_track_length = track_option.min_track_length;
+                    end
+                    default_plot_cell_split = track_option.plot_cell_split;
+                    default_max_distance = track_option.max_distance;
+                    default_output_cell_location = track_option.output_cell_location;
+                end
+            end
+
             %Initializing parameter/variable values.
             parameter_name = {'remove_short_track', 'min_track_length',...
                 'plot_cell_split','max_distance','output_cell_location'};
-            default_min_track_length = ceil(0.5*length(coordInfo));
-            default_value = {0, default_min_track_length, 0, 0.40,0};
+            default_value = {default_remove_short_track, default_min_track_length, ...
+                default_plot_cell_split, default_max_distance,default_output_cell_location};
+            
             [remove_short_track, min_track_length,...
                 plot_cell_split, max_distance, output_cell_location] =...
                 parse_parameter(parameter_name, default_value, varargin);
             
+
             %Debug multiple_object.simpletracking() parameters
 %             remove_short_track = 1;
 % %             min_track_length = 8;

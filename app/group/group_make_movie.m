@@ -8,8 +8,8 @@ default_value = {'p1', 0, 'FRET', 0, 1, '', ''};
     = parse_parameter(parameter_name, default_value, varargin);
 
 data = group.data;
-% movie_info.path = regexprep(data.path, position,'/');
-movie_info.path = strcat(data.path, position, '/');
+movie_info.path = regexprep(data.path, group.name, position);
+% movie_info.path = strcat(data.path, position, '/');
 movie_info.movie_name = [movie_info.path, 'output/', movie_name];
 movie_info.image_index = data.image_index;
 movie_info.index_pattern = data.index_pattern;

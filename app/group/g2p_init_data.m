@@ -88,7 +88,7 @@ if ~isempty(group_data)
         save(output_file,'data');
     end
 elseif exist(output_file, 'file') && load_file % group_data is empty
-    disp('g2p_init_data: Update from the data file since there is no input of group data. ');
+    disp('g2p_init_data: Update from the data file. ');
     res = load(output_file);
     data = res.data;
     % make the old and new format compatible, index --> image_index

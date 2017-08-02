@@ -1,5 +1,7 @@
 function my = my_function()
     my.pause = @my_pause;
+    % Change the following line to the location of your quanty_dataset_2.
+    % Close the folder name with '/'
     my.root = '/Users/kathylu/Documents/doc/paper/fluocell_0420/quanty_dataset_2/';
 return
 
