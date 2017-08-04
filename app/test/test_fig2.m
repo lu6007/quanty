@@ -22,6 +22,7 @@ data.path = strcat(p, 'p6/');
 % [~,prefix, postfix]=fileparts(data.first_file);
 % data.first_file = strcat(data.path, regexprep(prefix, 's1', 's6'), postfix);
 data.multiple_object = 1;
+data.brightness_factor = 0.7;
 data.show_detected_boundary = 1;
 data.save_processed_image = 1;
 % data.parallel_processing = 0;

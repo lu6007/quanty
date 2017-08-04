@@ -12,7 +12,7 @@ if enable_time, tic; end
 p = strcat(root, 'fig3/0722_cyto-fyn_cblwt_pdgf/');
 data = load_data(p, 'need_clean', 0, 'type', 'quanty');
 group = g2p_init_data(data, 'load_file', 1); 
-group_make_movie(group, 'position', 'p3', 'stimulus_info', 'PDGF'); 
+group_make_movie(group, 'position', 'p3', 'stimulus_info', 'PDGF', 'load_file', 0); 
 
 %%
 pause_str = 'Press any key to close current figures and continue.';
