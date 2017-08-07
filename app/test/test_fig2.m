@@ -44,5 +44,11 @@ group_plot(group, 'method', 1, 'normalize', 1, 'save_excel_file', 1, 'sheet_name
 my.pause(enable_pause, pause_str);
 close all;
 
+data = group.data;
+data = batch_update_figure(data);
+coordInfo = multiple_object.getCoord(data);
+[data, cell_location] = multiple_object.simpleTrack(data,coordInfo,'output_cell_location',1);
+frame_with_track = multiple_object.create_frame_track(cell_location);
+overlay_image_track(data, frame_with_track);
 
 if enable_time, toc; end
