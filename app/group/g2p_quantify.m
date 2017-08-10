@@ -76,6 +76,7 @@ for i = 3: num_folder
    data_i.prefix = regexprep(file, s1_str, si_str);
    first_file_no_path = strcat(data_i.prefix, ext);
    data_i.first_file = strcat(data_i.path, first_file_no_path);
+   % data_i.intensity_bound = [];
 
    %%% Main sub-function
    [this_image_index, time, intensity, ratio] = ...

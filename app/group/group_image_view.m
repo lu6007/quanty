@@ -88,7 +88,7 @@ for n = 1 : length(time_point)
         second_channel_im = preprocess(data_i.im{2}, data_i);
         ratio = compute_ratio(first_channel_im, second_channel_im);
         ratio_im = get_imd_image(ratio, max(first_channel_im, second_channel_im), ...
-                'ratio_bound', data_i.ratio_bound, 'intensity_bound', data_i.intensity_bound);
+                'ratio_bound', data_i.ratio_bound, 'intensity_bound', []);
 %         subplot(nRow, 5, i - 4), imshow(ratio_im);
         axes(fig_ha(ii));
         ratio_fig = insertText(ratio_im, [20, 20], name_i, 'Boxcolor', 'Black',...

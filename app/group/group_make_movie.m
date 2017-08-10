@@ -51,11 +51,8 @@ if ~load_file
         second_channel_im = preprocess(data_i.im{2}, data_i);
         ratio = compute_ratio(first_channel_im, second_channel_im);
         intensity = max(first_channel_im, second_channel_im);
-        min_i = min(min(intensity));
-        max_i = max(max(intensity));
-        intensity_bound = [min_i, min_i+(max_i-min_i)*0.5];
-        ratio_im{i} = get_imd_image(ratio, max(first_channel_im, second_channel_im), ...
-                'ratio_bound', data_i.ratio_bound, 'intensity_bound', intensity_bound);
+        ratio_im{i} = get_imd_image(ratio, intensity, ...
+                'ratio_bound', data_i.ratio_bound, 'intensity_bound', []);
         if save_file
             temp_file = [ratio_folder, str, num2str(i), '.tiff'];
             ratio_file = regexprep(temp_file, data_i.channel_pattern{1}, 'ratio');

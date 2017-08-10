@@ -1,10 +1,13 @@
 function my = my_function()
-    my.pause = @my_pause;
     % Change the following line to the location of your quanty_dataset_2.
     % Close the folder name with '/'
-    my.root = '/Users/kathylu/Documents/doc/paper/fluocell_0420/quanty_dataset_2/';
+    my.root = '/Users/kathylu/Documents/sof/data/quanty_dataset_2/';
+    my.pause = @my_pause;
 return
 
+% function my_pause(enable_pause, pause_str)
+% Allows the function name and pause_str to be dislayed
+% when enable_pause = 1 . 
 function my_pause(enable_pause, pause_str)
 if enable_pause
     % find the name of upper level function
