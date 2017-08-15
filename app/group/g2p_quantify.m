@@ -86,11 +86,11 @@ for i = 3: num_folder
    % Plotting the quantifications.
    %%% Configuring the subplots. %%%
    if enable_subplot 
-       num_figure = 4;
-        subm = 2; % number of rows
-        subn = 3; % number of columns
-        fn = 2+floor(pos_i/(subm*subn))*num_figure;
-        subplot_position = mod(pos_i, subm*subn)+1;
+        num_figure = 4;
+        num_row = 2; % number of rows
+        num_col = 3; % number of columns
+        fn = 2+floor(pos_i/(num_row*num_col))*num_figure;
+        subplot_position = mod(pos_i, num_row*num_col)+1;
         pos_i = pos_i +1; 
    end
 
@@ -99,29 +99,20 @@ for i = 3: num_folder
         my_figure; 
     else
         figure(fn+1); 
-        subplot(subm,subn,subplot_position); 
+        subplot(num_row,num_col,subplot_position); 
         my_figure('handle', fn+1); 
     end
     hold on;
 
-    %Problem: cfp_intensity always seems to be AT LEAST two cells long,
-    %irrespective of the actual number of objects in an image.
-    %Current workaround: set num_object based on the fret_ratio, which seems to
-    %reliably reflect the actual number of objects in an image. -Shannon 8/10/2016
-    % num_object = length(cfp_intensity);
-%     this_image_index = frame.this_image_index;
-%     time = frame.time;
+    % intensity{num_object+1, 2};
+    num_object = size(intensity,1)-1;
     fret_ratio = ratio;
-    num_object = length(fret_ratio);
-%     cfp_intensity = value.intensity{1:num_object,1};
-%     yfp_intensity = value.intensity{1:num_object, 2};
+    plot(this_image_index, intensity{num_object+1,1}(this_image_index), 'b--','LineWidth',2);
+    plot(this_image_index, intensity{num_object+1,2}(this_image_index), 'g--', 'LineWidth',2);  
     for j = 1:num_object
         plot(this_image_index, intensity{j,1}(this_image_index,1), 'b','LineWidth',2); 
-        plot(this_image_index, intensity{j, 2}(this_image_index,1), 'g','LineWidth',2);
+        plot(this_image_index, intensity{j,2}(this_image_index,1), 'g','LineWidth',2);
     end
-    j = num_object+1;
-    plot(this_image_index, intensity{j,1}(this_image_index), 'b--','LineWidth',2);
-    plot(this_image_index, intensity{j,1}(this_image_index), 'g--', 'LineWidth',2);  
 
     %Set title and legend for figure.
     title(regexprep(name_i,'_','\\_'));
@@ -133,11 +124,11 @@ for i = 3: num_folder
         my_figure; 
     else
         figure(fn+2); 
-        subplot(subm,subn,subplot_position); 
+        subplot(num_row,num_col,subplot_position); 
         my_figure('handle', fn+2);
     end
     hold on;
-    plot(time, 'LineWidth',2);
+    plot(this_image_index, time(this_image_index), 'LineWidth',2);
     title(regexprep(name_i,'_','\\_'));
     xlabel('Index'); ylabel('Time (min)');
 
@@ -146,7 +137,7 @@ for i = 3: num_folder
         my_figure; 
     else
         figure(fn+3);
-        subplot(subm,subn,subplot_position); 
+        subplot(num_row,num_col,subplot_position); 
         my_figure('handle', fn+3); 
     end
     hold on;
@@ -159,12 +150,23 @@ for i = 3: num_folder
     num_object = length(fret_ratio);
     this_fret_ratio = nan(num_image_index,num_object);
     %Assigns the corresponding fret_ratio value to the matrix.
+    % font_size and font_weight
+    fs = 12; fw = 'Bold';
+    xy = zeros(num_object, 2);
+    text_str = cell(num_object, 1);
     for j = 1:num_object
         this_fret_ratio(:,j) = fret_ratio{j}(this_image_index,1);
-    %     plot(this_image_index, fret_ratio{i}(this_image_index,1), 'r', 'LineWidth',2);
+        % set up the location of text labels
+        % ll is the last number which is not a nan
+        ll = find(~isnan(this_fret_ratio(:,j)),1, 'last');
+        xy(j,1) = ll+1;
+        xy(j,2) = this_fret_ratio(ll,j);
+        text_str{j} = num2str(j);
     end
-
+    
     plot(this_image_index, this_fret_ratio, 'r','LineWidth',2);
+    text(xy(:,1), xy(:,2),text_str,...
+        'color','r','FontSize', fs,'FontWeight', fw);
     title(regexprep(name_i,'_','\\_'));
     xlabel('Index'); ylabel('Intensity Ratio');
 
@@ -173,18 +175,16 @@ for i = 3: num_folder
         my_figure; 
     else
         figure(fn+4);
-        subplot(subm,subn,subplot_position); 
+        subplot(num_row,num_col,subplot_position); 
         my_figure('handle', fn+4); 
     end
     hold on;
     plot(time(this_image_index), this_fret_ratio, 'r','LineWidth',2);
     title(regexprep(name_i,'_','\\_'));
     xlabel('Time (min)'); ylabel('Intensity Ratio');
-    % my_figure('handle', fn+4, 'font_size', 24, 'line_width', 3);
+    
     clear this_fret_ratio;
-
-
-       clear name_i data_i si_str time value;
+    clear name_i data_i si_str time value;
 end % for i 
 
 return;

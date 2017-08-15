@@ -1,19 +1,24 @@
 % Compute the time course of FRET ratio for a single cell
+% function [this_image_index, time, intensity, ratio, value] = ...
+% compute_time_course(cell_name, data, varargin)
+% parameter_name = {'save_file', 'load_file', 'save_bw_file'};
+% default_value = {1, 1, 0};
+%
+% Output: Intensity{num_object+1,2} containing the average FI from 2 
+% channels followed by the background FI at the (num_object+1)the row. 
 % 
 % Example:
 % See g2p_quantify() for details.
 
-% Copyright: Shaoying Lu and Yingxiao Wang 2013 
-% Modified by Lexie Qin Qin, Shannon Laub, and Shaoying Lu 2016
+% Copyright: Shaoying Lu, Lexie Qin Qin, Shannon Laub, and Yingxiao Wang 2013-2017 
 % Email: shaoying.lu@gmail.com
-
 function [this_image_index, time, intensity, ratio, value] = ...
     compute_time_course(cell_name, data, varargin)
-fprintf('Postion: %s\n',cell_name);
 parameter_name = {'save_file', 'load_file', 'save_bw_file'};
 default_value = {1, 1, 0};
 [save_file, load_file, save_bw_file] =...
     parse_parameter(parameter_name, default_value, varargin);
+fprintf('Postion: %s\n',cell_name);
 
 %Initializing file and location for result.mat (out_file)
 output_path = strcat(data.path, 'output/');
@@ -26,7 +31,15 @@ if ~exist(out_file,'file') || load_file ==0
 
     %%% Interface with fluocell %%%
     %%% Main sub-function %%%
+    show_figure = data.show_figure;
+    save_processed_image = data.save_processed_image;
+    data.show_figure = 0;
+    data.save_processed_image = 0;
     data = batch_update_figure(data, 'save_bw_file', save_bw_file);
+    % run another time to show tracks
+    data.show_figure = show_figure;
+    data.save_processed_image = save_processed_image;
+    data = batch_update_figure(data, 'save_bw_file', 0);
     %%% 
     image_index = (1: max(data.image_index))';
     num_object = length(data.ratio);
@@ -56,9 +69,9 @@ if ~exist(out_file,'file') || load_file ==0
         zero_time = data.pdgf_time;
     elseif isfield(data, 'pdgf_between_frame')
         after_pdgf = data.pdgf_between_frame(2);
-        %%% Note that pdgf time is only correct for position 1, but 
-        %%% approximate for all the rest of positions. 03/04/2014
-        zero_time = time(after_pdgf)+0.5;
+        % Note that pdgf time is only calculated for position 1, and 
+        % used for all the rest of positions. 08/14/17
+        zero_time = time(after_pdgf)-0.5; %min
     else % no pdgf was added
         % correct the bug when the first frame was removed. 
         if ~isnan(time(1))

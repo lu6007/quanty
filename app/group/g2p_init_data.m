@@ -107,8 +107,7 @@ elseif exist(output_file, 'file') && load_file % group_data is empty
         data = rmfield(data,'cfp_channel');
         data = rmfield(data,'yfp_channel');
     end
-    if isfield(data,'first_cfp_file')&&~isfield(data,'first_file')
-        data.first_file = strcat(data.path,data.first_cfp_file);
+    if isfield(data,'first_cfp_file')
         data = rmfield(data,'first_cfp_file');
     end
     [~,name, ext] = fileparts(data.first_file);
