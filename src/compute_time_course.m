@@ -31,8 +31,16 @@ if ~exist(out_file,'file') || load_file ==0
 
     %%% Interface with fluocell %%%
     %%% Main sub-function %%%
-    show_figure = data.show_figure;
-    save_processed_image = data.save_processed_image;
+    if isfield(data, 'show_figure')
+        show_figure = data.show_figure;
+    else
+        show_figure = 0;
+    end
+    if isfield(data, 'save_processed_image')
+        save_processed_image = data.save_processed_image;
+    else
+        save_processed_image = 0;
+    end
     data.show_figure = 0;
     data.save_processed_image = 0;
     data = batch_update_figure(data, 'save_bw_file', save_bw_file);
