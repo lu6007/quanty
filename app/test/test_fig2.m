@@ -1,5 +1,5 @@
-% test_fig5
-% Generate results for Figs 5 . 
+% test_fig2
+% Generate results for Fig 2 . 
 % Update p with your own path, and make sure to use forward slash
 % only and inlude the last slash to close the folder name.
 %% 
@@ -38,6 +38,7 @@ track_option.min_track_length = [];
 track_option.plot_cell_split = 1;
 track_option.max_distance = 0.40; % default
 track_option.output_cell_location = 0; % default
+track_option.max_linking_distance = 70; % default
 group.data.track_option = track_option;
 g2p_quantify(group, 'show_figure', 1, 'load_file', 0, 'save_file',1);
 group_plot(group, 'method', 1, 'normalize', 1, 'save_excel_file', 1, 'sheet_name', 'FHA2BS');

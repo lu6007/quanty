@@ -159,7 +159,7 @@ for i = 3: num_folder
         % set up the location of text labels
         % ll is the last number which is not a nan
         ll = find(~isnan(this_fret_ratio(:,j)),1, 'last');
-        xy(j,1) = ll+1;
+        xy(j,1) = this_image_index(ll)+1;
         xy(j,2) = this_fret_ratio(ll,j);
         text_str{j} = num2str(j);
     end
