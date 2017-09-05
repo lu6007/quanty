@@ -5,27 +5,29 @@
 % (2) Insert time =0 and average basal value into the time course
 % at 0 min.
 % (3) Smooth the data before and after stimulation seperately. 
-function y_interp = my_interp(x,y, x_interp)
+function y_interp = my_interp(x,y, x_interp, varargin)
+para_name = {'smooth_span'};
+default_value = {40}; 
+smooth_span = parse_parameter(para_name, default_value, varargin);
 time_interp = x_interp;
 ii = ~isnan(y);
 this_time = x(ii);
 this_ratio = y(ii); 
 clear ii;
 nn = length(time_interp);
-smooth_span = 40;
 
 if min(this_time)>time_interp(1)
     temp = [time_interp(1); this_time]; clear this_time;
     this_time = temp; clear temp;
     temp = [this_ratio(1,:); this_ratio]; clear this_ratio;
     this_ratio = temp; clear temp;
-end;
+end
 if max(this_time)<time_interp(nn)
     temp = [this_time; time_interp(nn)]; clear this_time;
     this_time = temp; clear temp;
     temp = [this_ratio; this_ratio(length(this_ratio), :)]; clear this_ratio;
     this_ratio = temp; clear temp;
-end;
+end
 
 % Insert the 0 min ratio value
 index_before = (this_time < 0);
@@ -39,7 +41,7 @@ if ~sum(double(index_0))
     this_time = temp; clear temp;
     temp = [this_ratio(index_before); average_basal; this_ratio(index_after)]; clear this_ratio;
     this_ratio = temp; clear temp;
-end;
+end
 
 y_interp = interp1(this_time, this_ratio,time_interp,'linear');
 % y_before = smooth(y_interp(time_interp<=0), smooth_span);

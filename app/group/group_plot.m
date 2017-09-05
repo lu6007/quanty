@@ -1,6 +1,6 @@
-% function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
+% function [time_array, ratio_array, group_name] = group_plot( group, varargin )
 %     parameter_name = {'update_result','enable_plot','i_layer', 'method',...
-%         'save_excel_file','sheet_name','t_limit',...
+%         'save_excel_file','sheet_name','time_bound',...
 %         'enable_interpolation', 'enable_average_plot',...
 %         'error_bar_interval', 'normalize', 'select_track'};
 %     default_value = {0, 1, 1, 1, ...
@@ -29,8 +29,6 @@
 % >> group_plot(group, 'method', 2);
 % The excel file has the format "time, ratio, time, ratio, ..., ratio'
 %
-% For method = 4, same as method = 1,  backward compatible 08/15/2017
-%
 % For select_track, it is used to select good tracks from the quantified time
 % cousrse. select_track is a cell with the same number of entries as the
 % number of valid subfolders/positions. Each entry contains a column vector
@@ -43,20 +41,20 @@
 % Copyright: Shaoying Lu and Yingxiao Wang 2013-2017 
 % Email: shaoying.lu@gmail.com
 
-function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
+function [time_array, ratio_array, group_name] = group_plot( group, varargin )
     parameter_name = {'update_result','enable_plot','i_layer', 'method',...
-        'save_excel_file','sheet_name','t_limit',...
+        'save_excel_file','sheet_name','time_bound',...
         'enable_interpolation', 'enable_average_plot',...
         'error_bar_interval', 'normalize', 'select_track'};
     default_value = {0, 1, 1, 1, ...
         0, '', [], 0, 0, 5, 0, {}};
     [update_result, enable_plot, i_layer, method,...
-        save_excel_file, sheet_name, t_limit,enable_interpolation, ... 
+        save_excel_file, sheet_name, time_bound,enable_interpolation, ... 
         enable_average_plot, error_bar_interval, normalize, select_track] = ...
         parse_parameter(parameter_name, default_value, varargin);
     % i_layer : default = 1, outer layer
 
-    if method ==1 || method == 4
+    if method ==1 
         group_name = group.name;
         fprintf('Group Name : %s\n', group_name);
      elseif method ==2  
@@ -64,7 +62,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         group_index = group.index;
     end
 
-    if method == 1 || method ==4
+    if method == 1 
         % loop through the subfolders and automatically 
         % process the data. 
         data = group.data;
@@ -90,21 +88,6 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
             res = load(result_file);
             %%%
 
-%             % Adding for loop to try to adapt group_plot() for multiple objects in one image -Shannon 8/12/2016
-%             if method ==4 % for backward compatibility
-%                 res.ratio = res.fret_ratio;
-%                 num_frame = size(res.fret_ratio{1}, 1);
-%                 time = res.time(1:num_frame, :);
-%                 cfp_background = res.cfp_background(1:num_frame, :);
-%                 yfp_background = res.yfp_background(1:num_frame, :);
-%                 temp = rmfield(res, {'time', 'cfp_background', 'yfp_background'});
-%                 res = temp; clear temp;
-%                 res.time = time;
-%                 res.cfp_background = cfp_background;
-%                 res.yfp_background = yfp_background;
-%                 clear time cfp_background yfp_background;
-%             end
-            
             num_object = length(res.ratio);
             if isempty(select_track) || isempty(select_track{i})
                 loop_index = (1:num_object);
@@ -124,146 +107,95 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         end % for i 
       
     elseif method ==2 % read the time and ratio values from the excel file
-        num_exp = 1;
         old_exp = excel_read_curve(file_name);
-        exp{1} = old_exp{group_index};
-        group_name = exp{1}.name;    
+        num_exp = length(group_index);
+        exp = cell(num_exp, 1);
+        ii = 1;
+        for i = group_index'
+            exp{ii} = old_exp{i};
+            ii = ii+1;
+        end
+        group_name = exp{1}.name;   
+        clear old_exp;
     end % if method == 1 || method ==3
 
-  
+    my_fun = my_function();
+    
+    % Pre-count the total number of cells
+    num_cell_total =0;
+    num_frame = 0;
+    for i =1:num_exp
+        num_cell = size(exp{i}.cell,1);
+        exp{i}.num_cell = num_cell;
+        num_cell_total = num_cell_total+ num_cell;
+        num_frame = max(num_frame, size(exp{i}.cell(1).time,1));
+        num_frame = max(num_frame, size(exp{i}.cell(num_cell).time, 1));
+    end
+
     %% Make plots and possibly export to excel files
-     for i = 1:num_exp
-        num_cell = length(exp{i}.cell);
-        num_frame = max(size(exp{i}.cell(1).time,1), size(exp{i}.cell(num_cell).time, 1));
-        time_array = nan(num_frame, num_cell);
-        ratio_array = nan(num_frame, num_cell);
-        norm_ratio_array = nan(num_frame, num_cell);
-        time_ratio_array = nan(num_frame, 2*num_cell);
-        norm_time_ratio_array = nan(num_frame, 2*num_cell);
-
-       for j = 1:num_cell
+    ii = 1;
+    time_array = nan(num_frame, num_cell);
+    ratio_array = nan(num_frame, num_cell);
+    for i = 1:num_exp
+        for j = 1:exp{i}.num_cell
             time = exp{i}.cell(j).time;
-            value = exp{i}.cell(j).value;
             nn = size(time, 1);
-            time_array(1:nn,j) = time;
-            ratio_array(1:nn,j) = value;
-            time_ratio_array(1:nn,j*2-1) = time;
-            time_ratio_array(1:nn,j*2) = value;
-
-            before_index = (time>=-15) & (time<=0); 
-            value_before = mean(value(before_index))';
-            if isnan(value_before) 
-                % find the first non-nan value and use that to normalize
-               ii = find(~isnan(value),1); 
-               value_before = value(ii);
-            end
-            norm_ratio_array(1:nn,j) = value/value_before;
-            norm_time_ratio_array(1:nn, j*2-1) = time;
-            norm_time_ratio_array(1:nn, j*2) = value/value_before;
-            clear time value before_index;
+            time_array(1:nn,ii) = time;
+            ratio_array(1:nn,ii) = exp{i}.cell(j).value;
+            ii = ii+1;
+            clear time;
        end
     end %for i = 1:num_exp
     
+    norm_ratio_array = my_fun.normalize_time_value_array(time_array, ratio_array);
+        
     font_size = 24;
     line_width= 3;
     if enable_plot
         h = figure;
         plot(time_array, ratio_array, 'LineWidth', line_width);
-        ylabel('Intensity Ratio');
-        xlabel('Time (min)'); 
+        ylabel('Intensity Ratio'); xlabel('Time (min)'); 
         title('Single-cell Time Courses'); axis auto;
         my_figure('handle', h, 'line_width', line_width,'font_size', font_size);
-%         set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
-%         set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
-        
+    end
+    
+    if enable_plot
         h = figure;        
         plot(time_array, norm_ratio_array, 'LineWidth', line_width);
-        ylabel('Intensity Ratio');
-        xlabel('Time (min)'); 
-        title('Single-cell Time Courses'); axis auto;
+        ylabel('Intensity Ratio'); xlabel('Time (min)'); 
+        title('Normalized Time Courses'); axis auto;
         my_figure('handle', h, 'line_width', line_width, 'font_size', font_size);
-%         set(gca, 'LineWidth', line_width,'FontWeight','bold', 'FontSize', font_size);
-%         set(gca,'FontSize',font_size,'FontName','Arial', 'Fontweight', 'bold')
     end
-     clear time_array norm_ratio_array;
 
-     if save_excel_file
+    if save_excel_file         
+        [num_frame, num_cell] = size(time_array);
+        time_ratio_array = nan(num_frame, 2*num_cell);
+        time_ratio_array(:, 1:2:2*num_cell-1) = time_array;
+        time_ratio_array(:, 2:2:2*num_cell) = ratio_array;
          file_name = strcat(group.data.path,'../../', 'result.xlsx');
          % Save the original and normalized results
          % Time, Ratio, Time, Ratio at the same length with nan for missing files.   
         original_sheet = strcat(sheet_name, '-', num2str(i));
         xlswrite(file_name, time_ratio_array, original_sheet, 'A1');
+        %
         if ~strcmp(computer, 'MACI64') % Mac will output to CSV files without sheet option.
+            norm_time_ratio_array = nan(num_frame, 2*num_cell);
+            norm_time_ratio_array(:, 1:2:2*num_cell-1) = time_array;
+            norm_time_ratio_array(:, 2:2:2*num_cell) = norm_ratio_array;
             norm_sheet = strcat(sheet_name, '-Norm-', num2str(i));
             xlswrite(file_name, norm_time_ratio_array, norm_sheet, 'A1');
         end
-     end
-    clear time_ratio_array original_sheet norm_time_ratio_array norm_sheet;
-        
-
-    % Prepare for interpolation
-    % If the user did not specify an itnerpolation range, extract
-    % information from image data. 
-    if isempty(t_limit)   
-        jj = 1;
-        first_time_point = exp{1}.cell(end).time(jj); % extract the first point time of image data
-        while isnan(first_time_point) 
-            jj = jj+1;
-            first_time_point = exp{1}.cell(jj).time(1); 
-        end
-        jj = 0;
-        last_time_point = exp{1}.cell(1).time(end-jj); % extract the last time point of image data
-        while isnan(last_time_point)
-            jj = jj+1;
-            last_time_point = exp{1}.cell(jj).time(end-jj);
-        end
-        t_left_limit = ceil(first_time_point); 
-        t_right_limit = floor(last_time_point);
-        t_limit = [t_left_limit, t_right_limit];
-    end % if isempty(t_limit)
-    
-    time_interp = [t_limit(1):0.5:0, 0.1:0.1:10, 10.5:0.5:t_limit(2)]';
-
-    % Gather the cfp/fret ratio together 
+        clear time_ratio_array original_sheet norm_time_ratio_array norm_sheet;        
+    end
     % Calculate Interpolation
     % Allow the interp_time to be longer than the actual image time 
     % (should not allow this)
     % Extend the ratio values to both sides horizontally 
-
-    % Initialize the vectors/matrices
-    num_cell_total =0;
-    for i =1:num_exp
-        num_cell_total = num_cell_total+ length(exp{i}.cell);
-    end
-    nn = length(time_interp); % number of time_points
-    ratio_array_interp=zeros(nn, num_cell_total);
-    this_cell = 1;
-    for i = 1:num_exp
-        num_cell = length(exp{i}.cell);
-        for j = 1:num_cell
-            this_image_index = exp{i}.cell(j).this_image_index;
-            this_time = exp{i}.cell(j).time(this_image_index);
-            this_ratio = exp{i}.cell(j).value(this_image_index);
-            ratio_array_interp(:,this_cell) = my_interp(this_time, this_ratio, time_interp);
-            this_cell = this_cell+1;
-            clear this_cell_name data result_file res this ratio this_image_index;
-        end
-    end
-
-    % Normalized cfp/fret ratio
-    norm_ratio_array = zeros(size(ratio_array_interp));
-    this_cell = 1;
-    % Between -15 and 0 minutes
-    before_index = (time_interp<=0)&(time_interp>=-15); 
-    ratio_before = (mean(ratio_array_interp(before_index, :)))';
-    for i = 1:num_exp
-        num_cell = length(exp{i}.cell);
-        for j = 1:num_cell
-            norm_ratio_array(:,this_cell) = ratio_array_interp(:,this_cell)/ratio_before(this_cell);
-            exp{i}.cell(j).norm_value = exp{i}.cell(j).value/ratio_before(this_cell);
-            this_cell = this_cell+1;
-        end
-    end
+    time_interp = my_fun.get_time_interp(time_array, 'time_bound', time_bound);
+    ratio_array_interp = my_fun.interpolate_time_value_array(time_array, ratio_array, ...
+        time_interp);
+    norm_ratio_array_interp = my_fun.interpolate_time_value_array(time_array, norm_ratio_array, ...
+        time_interp);
 
     % make the right name for plots, Lexie on 02/19/2015
     if any(strcmp(varargin, 'sheet_name'))
@@ -287,7 +219,7 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
 
 
         h=figure;
-        plot(time_interp, norm_ratio_array, 'LineWidth', line_width);
+        plot(time_interp, norm_ratio_array_interp, 'LineWidth', line_width);
         my_figure('handle', h, 'line_width', line_width, 'font_size', font_size);
         title(regexprep(title_str,'_','\\_'));
         xlabel('Time (min)');
@@ -325,28 +257,28 @@ function [time_interp, ratio_array, group_name] = group_plot( group, varargin )
         ylabel('Intensity Ratio');
         xlabel('Time (min)'); 
         title('Average Plot with Single Cell Data'); axis auto;
-        % axis([t_limit, y_limit_before_norm]);
+        % axis([time_bound, y_limit_before_norm]);
     end % plot the average curve with all original data ploted as circles
 
-    %% export to excel files
-    if save_excel_file
-        time_ratio = [time_interp norm_ratio_array];
-        file_name = strcat(group.data.path,'../../', 'result-norm.xlsx');
-        if ~isempty(sheet_name)
-            xlswrite(file_name, time_ratio, strcat(sheet_name,'-Interp'));
-        else
-            xlswrite(file_name, time_ratio);
-        end
-
-        %%%%%%%%%%%%%%%%%%%%%output the original ratio value
-        time_ratio1 = [time_interp ratio_array_interp];
-        file_name1 = strcat(group.data.path,'../../', 'result-interp.xlsx');
-        if ~isempty(sheet_name)
-            xlswrite(file_name1, time_ratio1, strcat(sheet_name,'-Interp'));
-        else
-            xlswrite(file_name1, time_ratio1);
-        end
-    end % if save_exel_file
+%     %% export to excel files
+%     if save_excel_file
+%         time_ratio = [time_interp norm_ratio_array];
+%         file_name = strcat(group.data.path,'../../', 'result-norm.xlsx');
+%         if ~isempty(sheet_name)
+%             xlswrite(file_name, time_ratio, strcat(sheet_name,'-Interp'));
+%         else
+%             xlswrite(file_name, time_ratio);
+%         end
+% 
+%         %%%%%%%%%%%%%%%%%%%%%output the original ratio value
+%         time_ratio1 = [time_interp ratio_array_interp];
+%         file_name1 = strcat(group.data.path,'../../', 'result-interp.xlsx');
+%         if ~isempty(sheet_name)
+%             xlswrite(file_name1, time_ratio1, strcat(sheet_name,'-Interp'));
+%         else
+%             xlswrite(file_name1, time_ratio1);
+%         end
+%     end % if save_exel_file
 
 return;
 
