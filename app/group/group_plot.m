@@ -90,11 +90,13 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
 
             num_object = length(res.ratio);
             if isempty(select_track) || isempty(select_track{i})
-                loop_index = (1:num_object);
+                loop_index = (1:num_object)';
             else
-                loop_index = select_track{i}';
+                loop_index = select_track{i};
             end
-            for k = loop_index
+            % To pre-allocate cell(j), need to make a cell array,
+            % then convert the cell array to structure.
+            for k = loop_index'
                 j = j+1;
 %                % Adapting group_plot() for multiple objects. -Shannon 8/12/2016
 %                % i_layer is currently the first (outer) layer or the first roi. 
@@ -125,7 +127,7 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
     num_cell_total =0;
     num_frame = 0;
     for i =1:num_exp
-        num_cell = size(exp{i}.cell,1);
+        num_cell = length(exp{i}.cell); 
         exp{i}.num_cell = num_cell;
         num_cell_total = num_cell_total+ num_cell;
         num_frame = max(num_frame, size(exp{i}.cell(1).time,1));
@@ -230,13 +232,13 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
     % plot the average curve with all data ploted as circles
     if enable_average_plot
         % stop_index = find(time_interp == last_time_point);
-        num_cell = size(norm_ratio_array, 2);
+        num_cell = size(norm_ratio_array_interp, 2);
         if normalize
-            mean_ratio_array = mean(norm_ratio_array, 2);
-            std_error = std(norm_ratio_array, 0, 2)/sqrt(num_cell);
+            mean_ratio_array = mean(norm_ratio_array_interp, 2);
+            std_error = std(norm_ratio_array_interp, 0, 2)/sqrt(num_cell);
         else
-            mean_ratio_array = mean(ratio_array, 2);
-            std_error = std(ratio_array, 0, 2)/sqrt(num_cell);
+            mean_ratio_array = mean(ratio_array_interp, 2);
+            std_error = std(ratio_array_interp, 0, 2)/sqrt(num_cell);
         end
         h = figure; hold on;
         for n = 1 : length(exp{1, 1}.cell)      

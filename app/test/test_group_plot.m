@@ -1,10 +1,11 @@
-% test_group_plot_0902_2017.m
-
-%% Initialize
-my_fun = my_function();
-p = '/Volumes/KathyWD2TB/data/2017/rongxue_0814/0901_excel_file/0902/';
-result_file = strcat(p, 'result.mat');
-
+% % test_group_plot_0902_2017.m
+% 
+% %% Initialize
+% my_fun = my_function();
+% p = '/Volumes/KathyWD2TB/data/2017/rongxue_0814/0901_excel_file/0902/';
+% % p = 'F:\data\2017\rongxue_0814\0901_excel_file\0902\';
+% result_file = strcat(p, 'result.mat');
+% 
 % %% Calculate the ratio arrays.
 % % Read from 3 different excel files with 2 sheets each
 % % Combine the time courses into 3 groups
@@ -55,8 +56,14 @@ ratio{2} = res.nrr_ratio_328110;
 time{3} = res.nrr_time_328150;
 ratio{3} = res.nrr_ratio_328150;
 
-% Calculate max_ratio, half_time to reach max, and end_ratio between 25-30
-% min
+% Calculate max_ratio, end_ratio between 25-30 min,
+% and half_time to reach max. 
+% Half time was calculated by 
+% (1) Confirm that the max percentage increase >5%
+% (2) Find the first positive time point j with a ratio value 
+%     > ½ max percentage increase
+% (3) Interpolation between the ratio values of j-1 and j to obtain 
+% the estimated time point with ½ max.
 max_ratio = cell(num_group, 1);
 half_time = cell(num_group,1);
 end_ratio = cell(num_group,1);
@@ -67,6 +74,9 @@ for i = 1:num_group
     num_cell = size(ratio{i},2);
     half_time{i} = nan(num_cell,1);
     for j = 1:num_cell
+        if max_ratio{i}(j)<= 5
+            continue;
+        end
         half_max = max_ratio{i}(j)/2;
         jj = find(ratio{i}(:,j)>half_max, 1);
         if jj == 1 || time{i}(jj)<=0
