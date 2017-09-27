@@ -1,8 +1,8 @@
 % Compute the time course of FRET ratio for a single cell
 % function [this_image_index, time, intensity, ratio, value] = ...
 % compute_time_course(cell_name, data, varargin)
-% parameter_name = {'save_file', 'load_file', 'save_bw_file'};
-% default_value = {1, 1, 0};
+% parameter_name = {'save_file', 'load_file'};
+% default_value = {1, 1};
 %
 % Output: Intensity{num_object+1,2} containing the average FI from 2 
 % channels followed by the background FI at the (num_object+1)the row. 
@@ -14,9 +14,9 @@
 % Email: shaoying.lu@gmail.com
 function [this_image_index, time, intensity, ratio, value] = ...
     compute_time_course(cell_name, data, varargin)
-parameter_name = {'save_file', 'load_file', 'save_bw_file'};
-default_value = {1, 1, 0};
-[save_file, load_file, save_bw_file] =...
+parameter_name = {'save_file', 'load_file'};
+default_value = {1, 1};
+[save_file, load_file] =...
     parse_parameter(parameter_name, default_value, varargin);
 fprintf('Postion: %s\n',cell_name);
 
@@ -43,11 +43,11 @@ if ~exist(out_file,'file') || load_file ==0
     end
     data.show_figure = 0;
     data.save_processed_image = 0;
-    data = batch_update_figure(data, 'save_bw_file', save_bw_file);
+    data = batch_update_figure(data);
     % run another time to show tracks
     data.show_figure = show_figure;
     data.save_processed_image = save_processed_image;
-    data = batch_update_figure(data, 'save_bw_file', 0);
+    data = batch_update_figure(data);
     %%% 
     image_index = (1: max(data.image_index))';
     num_object = length(data.ratio);
