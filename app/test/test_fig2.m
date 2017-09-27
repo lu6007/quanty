@@ -7,6 +7,7 @@ close all;
 if ~exist('enable_pause', 'var')
     enable_pause = 1;
 end
+fprintf('test_fig2: enable_pause = %d\n', enable_pause);
 pause_str = 'Press any key to close current figures and continue.';
 my = my_function();
 root = my.root;
