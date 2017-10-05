@@ -15,7 +15,58 @@ root = my.root;
 enable_time = 1;
 if enable_time, tic; end
 
-%%
+%% Figs. 2A and 2B
+p = strcat(root, 'fig2/0722_2015_lyn-fyn_kras_cbl/p3/');
+% Manual background subtraction
+data = load_data(p);
+bg_file = strcat(p, 'output/background.mat');
+bg_file_manual = strcat(p, 'output/background_manual.mat');
+copyfile(bg_file_manual, bg_file);
+data = batch_update_figure(data); 
+time_manual = data.time(1:25, 2);
+time = time_manual - time_manual(1); 
+ratio_manual = data.ratio{1}(1:25, 1);
+my.pause(enable_pause, pause_str);
+
+% Automatic background subtraction
+data.subtract_background = 2; % Automaticly subtract background
+bg_file_auto = strcat(p, 'output/background_auto.mat');
+copyfile(bg_file_auto, bg_file);
+data = batch_update_figure(data);
+ratio_auto = data.ratio{1}(1:25, 1);
+%
+fs = 16; lw = 2;
+my_figure('font_size', fs, 'line_width', lw); hold on; 
+plot(time, ratio_auto, 'k', 'LineWidth', lw); 
+plot(time, ratio_manual, 'bo', 'LineWidth', lw);
+legend('Auto-BG', 'Manual-BG');
+xlabel('Time (min)'); ylabel('Intensity Ratio');
+%
+my.pause(enable_pause, pause_str);
+close all;
+
+%%  Figs. 2E and 2F
+% previously 
+% data.num_roi = 1;
+% data.quantify_roi = 1; 
+data.num_roi = 3;
+data.quantify_roi = 2;
+data = rmfield(data, 'roi_bw');
+data = batch_update_figure(data);
+ratio_manual = data.ratio{1}(data.image_index, :);
+my.pause(enable_pause, pause_str);
+
+data.quantify_roi = 3;
+data.num_roi = 3;
+data = batch_update_figure(data);
+ratio_auto = data.ratio{1}(data.image_index, :);
+my_figure('font_size', fs, 'line_width', lw); hold on; 
+plot(time, ratio_manual, 'LineWidth', lw);
+plot(time, ratio_auto(:,1), 'bo', 'LineWidth', lw);
+my.pause(enable_pause, pause_str);
+% close all;
+
+%% Fig. 2H
 p = strcat(root, 'fig2/0901_qin_tcp_fha2bs_hela/');
 data_file = strcat(p, 'output/data.mat'); 
 data = load_data(p);
