@@ -32,7 +32,7 @@ end
 % Insert the 0 min ratio value
 index_before = (this_time < 0);
 index_0 = (this_time == 0);
-index_after = (this_time>0 & this_time<=time_interp(nn));
+index_after = (this_time>0);
 average_basal = mean(this_ratio(index_before));
 % if 0 is not in the array this_time,
 % add 0 into the time course
@@ -46,10 +46,11 @@ end
 y_interp = interp1(this_time, this_ratio,time_interp,'linear');
 % y_before = smooth(y_interp(time_interp<=0), smooth_span);
 % y_after = smooth(y_interp(time_interp>0), smooth_span); clear y_interp;
-temp = smooth(y_interp(time_interp<=0.5), smooth_span);
-y_before = temp(time_interp<=0); clear temp;
-temp = smooth(y_interp(time_interp>=-0.5), smooth_span); 
-tt = time_interp(time_interp>=-0.5);
-y_after = temp(tt>0); clear y_interp temp; % time_interp>0
+time_interp_before = (time_interp<=0);
+temp = smooth(time_interp(time_interp_before), y_interp(time_interp_before), smooth_span, 'lowess');
+y_before = temp(time_interp_before); clear temp;
+time_interp_after = (time_interp>0);
+y_after = smooth(time_interp(time_interp_after), y_interp(time_interp_after), smooth_span, 'lowess'); 
+% y_after = temp(time_interp_after>0); clear y_interp temp; % time_interp>0
 y_interp = [y_before; y_after];
 return;

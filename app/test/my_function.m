@@ -10,6 +10,8 @@ function my = my_function()
     my.normalize_time_value_array = @normalize_time_value_array;
     my.interpolate_time_value_array = @interpolate_time_value_array;
     my.statistic_test = @statistic_test;
+    my.get_derivative = @get_derivative;
+    my.get_area_ratio = @get_area_ratio;
 return
 
 % function my_pause(enable_pause, pause_str)
@@ -51,7 +53,7 @@ return
 % Find average value for time between -15 min and 0 min
 function value_before = get_value_before(time, value)
     before_index = (time>=-15) & (time<=0); 
-    value_before = mean(value(before_index))';
+    value_before = nanmean(value(before_index))';
     if isnan(value_before) 
         % find the first non-nan value and use that to normalize
        ii = find(~isnan(value),1); 
@@ -110,21 +112,78 @@ function interp_value_array = interpolate_time_value_array(time_array, value_arr
     interp_value_array = nan(num_time, num_cell);
     for j = 1:num_cell
         interp_value_array(:, j) = my_interp(time_array(:,j),value_array(:, j), ...
-            time_interp, 'smooth_span', 10);
+            time_interp, 'smooth_span', 9);
     end 
 return;
 
-% function p = statistic_test(x,y, test_name)
-% Perform 2 sample statistical tests
-% test_name can be 'kstes', ranksum', or 'ttest'
-function p = statistic_test(x,y, test_name)
-    switch test_name
-        case 'kstest'
-            [~,p] = kstest2(x,y);
-        case 'ranksum'
-            p = ranksum(x,y);
-        case 'ttest' 
-            % two-tail and unequal variance
-            [~, p] = ttest2(x,y, 'Vartype', 'unequal');
-    end
+% function p = statistic_test(x, y, varargin)
+% parameter_name = {'method', 'group'};
+% default_value = {'ttest', 'two groups'};
+% 
+% Perform statistical comparison between two groups
+% method can be 'kstest', ranksum', or 'ttest'
+% 
+% Example:
+% statistical_test(yf, wt, 'method', 'ranksum', 'group', 'yf and wt');
+%
+function p = statistic_test(x, y, varargin)
+parameter_name = {'method', 'group'};
+default_value = {'ttest', 'two groups'};
+[method, group] = parse_parameter(parameter_name, default_value, varargin);
+
+switch method
+    case 'kstest'
+            [~, p] = kstest2(x,y);
+    case 'ttest' % t-test
+        [~, p] = ttest2(x, y, 'Vartype','unequal', 'tail', 'both');
+    case 'ranksum' % ranksum
+        [p, ~] = ranksum(x, y);
+end
+n1 = size(x,1); 
+stat.x.size = n1;
+stat.x.average = mean(x);
+stat.x.standard_error = std(x)/sqrt(n1);
+n2 = size(y,1); 
+stat.y.size = n2;
+stat.y.average = mean(y);
+stat.y.standard_error = std(y)/sqrt(n2);
+fprintf('Compare %s,\n', group);
+fprintf('p-value = %e, method: %s; \n', p, method);
+fprintf('n1 = %d, mean-SEM: %f +/- %f; \n', stat.x.size, stat.x.average, stat.x.standard_error);
+fprintf('n2 = %d, mean-SEM: %f +/- %f. \n\n', stat.y.size, stat.y.average, stat.y.standard_error);
+return
+
+% function [max_deriv, max_i, min_deriv, min_i] = get_derivative(t, y)
+function [max_deriv, max_i, min_deriv, min_i] = get_derivative(t, y)
+first_deriv = gradient(y, t).*(t>0); %??? 
+[max_deriv, max_i] = max(first_deriv);
+if max_deriv <=0
+    max_deriv = nan;
+    max_i = nan;
+    min_deriv = nan;
+    min_i = nan;
+    return;
+end
+[min_deriv, min_i] = min(first_deriv(max_i+1:end));
+if isempty(min_deriv) || min_deriv >=0
+    min_deriv = nan;
+    min_i = nan;
+end
+return
+
+% function area_ratio = get_area_ratio(t, y)
+% Area ratio is a measure of transient index
+function area_ratio = get_area_ratio(t, y)
+time_th = 15; % min
+time_span = 15; % min
+max_y_95 = prctile(y, 95, 1);
+max_i_95 = find(y>=max_y_95, 1);
+if t(max_i_95)>=time_th
+    area_ratio = nan;
+    return;
+end
+t95 = t(max_i_95);
+index = (t>=t95)&(t<=t95+time_span);
+area_curve = trapz(t(index), y(index));
+area_ratio = area_curve/max_y_95*time_span;
 return
