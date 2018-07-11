@@ -41,6 +41,9 @@ if ~exist(out_file,'file') || load_file ==0
     else
         save_processed_image = 0;
     end
+%     if isfield(data, 'frame_with_track')
+%         data = rmfield(data, 'frame_with_track');
+%     end
     data.show_figure = 0;
     data.save_processed_image = 0;
     data = batch_update_figure(data);

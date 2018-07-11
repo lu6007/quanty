@@ -174,7 +174,7 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         time_ratio_array = nan(num_frame, 2*num_cell);
         time_ratio_array(:, 1:2:2*num_cell-1) = time_array;
         time_ratio_array(:, 2:2:2*num_cell) = ratio_array;
-         file_name = strcat(group.data.path,'../../', 'result.xlsx');
+         file_name = strcat(group.data.path,'../output/', 'result-raw.xlsx');
          % Save the original and normalized results
          % Time, Ratio, Time, Ratio at the same length with nan for missing files.   
         original_sheet = strcat(sheet_name, '-', num2str(i));
@@ -264,8 +264,8 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
 
 %     %% export to excel files
 %     if save_excel_file
-%         time_ratio = [time_interp norm_ratio_array];
-%         file_name = strcat(group.data.path,'../../', 'result-norm.xlsx');
+%         time_ratio = [time_interp norm_ratio_array_interp];
+%         file_name = strcat(group.data.path,'../output/', 'result-interp-norm.xlsx');
 %         if ~isempty(sheet_name)
 %             xlswrite(file_name, time_ratio, strcat(sheet_name,'-Interp'));
 %         else
@@ -274,7 +274,7 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
 % 
 %         %%%%%%%%%%%%%%%%%%%%%output the original ratio value
 %         time_ratio1 = [time_interp ratio_array_interp];
-%         file_name1 = strcat(group.data.path,'../../', 'result-interp.xlsx');
+%         file_name1 = strcat(group.data.path,'../output/', 'result-interp.xlsx');
 %         if ~isempty(sheet_name)
 %             xlswrite(file_name1, time_ratio1, strcat(sheet_name,'-Interp'));
 %         else
