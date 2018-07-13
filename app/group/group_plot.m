@@ -157,29 +157,52 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         clear norm_ratio_array; 
         % time_array will be the same
     end
+    
+    % Calculate Interpolation
+    % Allow the interp_time to be longer than the actual image time 
+    % (should not allow this)
+    % Extend the ratio values to both sides horizontally 
+    if enable_interpolate
+        time_interp = my_fun.get_time_interp(time_array, 'time_bound', time_bound);
+        ratio_array_interp = my_fun.interpolate_time_value_array(time_array, ratio_array, ...
+            time_interp);
+        clear time_array; time_array = time_interp; clear time_interp; 
+        clear ratio_array; ratio_array = ratio_array_interp; clear ratio_array_interp;
+    end 
         
     font_size = 24;
     line_width= 3;
-    if enable_normalize
-        title_str = 'Normalized Time Courses';
+    if ~enable_normalize && ~enable_interpolate
+        title_str = 'Single-cell Time Courses'; 
         output_file = 'result-raw.xlsx';
-    else
-        title_str = 'Single-cell Time Courses';
+    elseif enable_normalize && ~enable_interpolate
+        title_str = 'Normalized Time Courses';
         output_file = 'result-normaliz.xlsx';
+    elseif ~enable_normalize && enable_interpolate
+        title_str = 'Single-cell Time Courses';
+        output_file = 'result-interpolate.xlsx';
+    else % enable_normalize && enable_interpolate
+        title_str = 'Normalize Time Courses';
+        output_file = 'result-normalize-interpolate.xlsx';
     end
+    
     if enable_plot
-        h = figure;
+        my_figure('line_width', line_width,'font_size', font_size);
         plot(time_array, ratio_array, 'LineWidth', line_width);
         ylabel('Intensity Ratio'); xlabel('Time (min)'); 
         title(title_str); axis auto;
-        my_figure('handle', h, 'line_width', line_width,'font_size', font_size);
+        % set(gca, 'LineWidth', line_width, 'FontSize', font_size);
     end
     
-    if save_excel_file         
-        [num_frame, num_cell] = size(time_array);
-        time_ratio_array = nan(num_frame, 2*num_cell);
-        time_ratio_array(:, 1:2:2*num_cell-1) = time_array;
-        time_ratio_array(:, 2:2:2*num_cell) = ratio_array;
+    if save_excel_file 
+        if ~enable_interp
+            [num_frame, num_cell] = size(time_array);
+            time_ratio_array = nan(num_frame, 2*num_cell);
+            time_ratio_array(:, 1:2:2*num_cell-1) = time_array;
+            time_ratio_array(:, 2:2:2*num_cell) = ratio_array;
+        else 
+            time_ratio_array = [time_array ratio_array];
+        end
          file_name = strcat(group.data.path,'../output/', output_file);
          % Save the original and normalized results
          % Time, Ratio, Time, Ratio at the same length with nan for missing files.   
@@ -187,49 +210,43 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         xlswrite(file_name, time_ratio_array, original_sheet, 'A1');
         clear time_ratio_array original_sheet norm_time_ratio_array norm_sheet;        
     end
-    % Calculate Interpolation
-    % Allow the interp_time to be longer than the actual image time 
-    % (should not allow this)
-    % Extend the ratio values to both sides horizontally 
-    time_interp = my_fun.get_time_interp(time_array, 'time_bound', time_bound);
-    ratio_array_interp = my_fun.interpolate_time_value_array(time_array, ratio_array, ...
-        time_interp);
+    
 
-    % make the right name for plots, Lexie on 02/19/2015
-    if any(strcmp(varargin, 'sheet_name'))
-        index_temp = find(strcmp(varargin, 'sheet_name')) + 1;
-        plot_title = varargin{1, index_temp};
-    else
-        plot_title = '';
-    end; clear intex_temp
+%     % make the right name for plots, Lexie on 02/19/2015
+%     if any(strcmp(varargin, 'sheet_name'))
+%         index_temp = find(strcmp(varargin, 'sheet_name')) + 1;
+%         plot_title = varargin{1, index_temp};
+%     else
+%         plot_title = '';
+%     end; clear intex_temp
 
 
-    % Make plots of the CFP/FRET and Normalized ECFP/FRET ratios
-    if enable_plot  && enable_interpolate
-        title_str = plot_title;
-        % Plot the Ratio Arrays
-        h=figure;
-        plot(time_interp, ratio_array_interp, 'LineWidth', line_width);
-        my_figure('handle', h, 'line_width', line_width, 'font_size', font_size);
-        title(regexprep(title_str,'_','\\_'));
-        xlabel('Time (min)');
-        ylabel('Intensity Ratio');
-    end % if enable_plot
+%     % Make plots of the CFP/FRET and Normalized ECFP/FRET ratios
+%     if enable_plot  && enable_interpolate
+%         title_str = plot_title;
+%         % Plot the Ratio Arrays
+%         h=figure;
+%         plot(time_interp, ratio_array_interp, 'LineWidth', line_width);
+%         my_figure('handle', h, 'line_width', line_width, 'font_size', font_size);
+%         title(regexprep(title_str,'_','\\_'));
+%         xlabel('Time (min)');
+%         ylabel('Intensity Ratio');
+%     end % if enable_plot
 
     % plot the average curve with all data ploted as circles
-    if enable_average_plot
+    if enable_average_plot && enable_interpolate
         % stop_index = find(time_interp == last_time_point);
-        num_cell = size(ratio_array_interp, 2);
-        mean_ratio_array = mean(ratio_array_interp, 2);
-        std_error = std(ratio_array_interp, 0, 2)/sqrt(num_cell);
+        num_cell = size(ratio_array, 2);
+        mean_ratio_array = mean(ratio_array, 2);
+        std_error = std(ratio_array, 0, 2)/sqrt(num_cell);
         h = figure; hold on;
-        for i = 1:size(time_array, 2)
-            plot(time_array(:,i), ratio_array(:,i), 'o', 'color', [0.5 0.5 0.5]);
+        for i = 1:num_cell 
+            plot(time_array(:), ratio_array(:,i), 'o', 'color', [0.5 0.5 0.5]);
         end
             
         % add the error bar
-        plot(time_interp, mean_ratio_array, 'k', 'LineWidth', line_width);
-        add_error_bar(time_interp, mean_ratio_array, std_error,...
+        plot(time_array, mean_ratio_array, 'k', 'LineWidth', line_width);
+        add_error_bar(time_array, mean_ratio_array, std_error,...
             'error_bar_interval', error_bar_interval);
         my_figure('handle', h, 'line_width', line_width, 'font_size', font_size);
         ylabel('Intensity Ratio');
