@@ -91,6 +91,15 @@ elseif exist(output_file, 'file') && load_file % group_data is empty
     disp('g2p_init_data: Update from the data file. ');
     res = load(output_file);
     data = res.data;
+    if ~strcmp(data.path, p)
+        data.path = p;
+        [~,name, ext] = fileparts(data.first_file);
+        data.first_file = strcat(data.path, name, ext);
+        data.output_path = strcat(data.path, 'output/');
+        display('Changing data.path'); 
+        display(data.path);
+    end
+    
     % make the old and new format compatible, index --> image_index
     if isfield(data,'index')&&~isfield(data,'image_index')
         if size(data.index,2)>1 % transpose row vectors
@@ -110,10 +119,6 @@ elseif exist(output_file, 'file') && load_file % group_data is empty
     if isfield(data,'first_cfp_file')
         data = rmfield(data,'first_cfp_file');
     end
-    [~,name, ext] = fileparts(data.first_file);
-    data.first_file = strcat(data.path, name, ext);
-    data.output_path = strcat(data.path, 'output/');
-
     % if there is no prefix and postfix, generate them in the group data
     % structure
     if ~isfield(data, 'prefix') && ~isfield(data, 'postfix')
