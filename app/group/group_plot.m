@@ -1,10 +1,12 @@
 % function [time_array, ratio_array, group_name] = group_plot( group, varargin )
 %     parameter_name = {'update_result','enable_plot','i_layer', 'method',...
-%         'save_excel_file','sheet_name','time_bound',...
-%         'enable_interpolate', 'enable_average_plot',...
-%         'error_bar_interval', 'normalize', 'select_track'};
+%         'save_excel_file','sheet_name','enable_interpolate', 'time_bound', 'smooth_span', ...
+%         'enable_average_plot', 'error_bar_interval', ...
+%         'enable_normalize', 'normalize_time_bound', 'select_track'};
 %     default_value = {0, 1, 1, 1, ...
-%         0, '', [], 0, 0, 5, 0, {}};
+%         0, '', 0, [], 9, ...
+%         0, 5, ...
+%         0, [-15 0], {}};
 %
 % Example:
 % For method = 1 , load data from fluocell_data
@@ -13,7 +15,7 @@
 % >> group.data = data;
 % >> group_plot(group, 'method', 1);
 % or
-% >> group_plot(group, 'method', 1, 'normalize', 1);
+% >> group_plot(group, 'method', 1, 'enable_normalize', 1);
 %
 % To save excel files
 % group_plot(group,'method',1, 'save_excel_file', 1, 'sheet_name', 'Dish5');
@@ -35,22 +37,25 @@
 % indicating the tracks to be selected. 
 % Example: 
 % >> select_track = {[2], [1;2], [1;3]};
-% >> group_plot(group, 'method', 1, 'normalize', 1, 'save_excel_file', 1, ...
-% >> 'sheet_name', 'ratio', 'select_track', select_track);
+% >> group_plot(group, 'method', 1, 'enable_normalize', 1, 'save_excel_file', 1, ...
+%  'sheet_name', 'ratio', 'select_track', select_track);
 
 % Copyright: Shaoying Lu and Yingxiao Wang 2013-2017 
 % Email: shaoying.lu@gmail.com
 
 function [time_array, ratio_array, group_name] = group_plot( group, varargin )
     parameter_name = {'update_result','enable_plot','i_layer', 'method',...
-        'save_excel_file','sheet_name','time_bound',...
-        'enable_interpolate', 'enable_average_plot',...
-        'error_bar_interval', 'enable_normalize', 'normalize_time_bound', 'select_track'};
+        'save_excel_file','sheet_name','enable_interpolate', 'time_bound', 'smooth_span', ...
+        'enable_average_plot', 'error_bar_interval', ...
+        'enable_normalize', 'normalize_time_bound', 'select_track'};
     default_value = {0, 1, 1, 1, ...
-        0, '', [], 0, 0, 5, 0, [-15 0], {}};
+        0, '', 0, [], 9, ...
+        0, 5, ...
+        0, [-15 0], {}};
     [update_result, enable_plot, i_layer, method,...
-        save_excel_file, sheet_name, time_bound,enable_interpolate, ... 
-        enable_average_plot, error_bar_interval, enable_normalize, normalize_time_bound, select_track] = ...
+        save_excel_file, sheet_name, enable_interpolate, time_bound, smooth_span, ...
+        enable_average_plot, error_bar_interval, ...
+        enable_normalize, normalize_time_bound, select_track] = ...
         parse_parameter(parameter_name, default_value, varargin);
     % i_layer : default = 1, outer layer
 
@@ -134,7 +139,7 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         num_frame = max(num_frame, size(exp{i}.cell(num_cell).time, 1));
     end
 
-    %% Make plots and possibly export to excel files
+    % Make plots and possibly export to excel files
     ii = 1;
     time_array = nan(num_frame, num_cell);
     ratio_array = nan(num_frame, num_cell);
@@ -148,7 +153,7 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
             clear time;
        end
     end %for i = 1:num_exp
-    
+        
     if enable_normalize
         norm_ratio_array = my_fun.normalize_time_value_array(time_array, ratio_array, ...
             'time_bound', normalize_time_bound);
@@ -157,6 +162,9 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         clear norm_ratio_array; 
         % time_array will be the same
     end
+
+    original_time_array = time_array;
+    original_ratio_array = ratio_array; 
     
     % Calculate Interpolation
     % Allow the interp_time to be longer than the actual image time 
@@ -165,7 +173,7 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
     if enable_interpolate
         time_interp = my_fun.get_time_interp(time_array, 'time_bound', time_bound);
         ratio_array_interp = my_fun.interpolate_time_value_array(time_array, ratio_array, ...
-            time_interp);
+            time_interp, 'smooth_span', smooth_span);
         clear time_array; time_array = time_interp; clear time_interp; 
         clear ratio_array; ratio_array = ratio_array_interp; clear ratio_array_interp;
     end 
@@ -193,6 +201,16 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         title(title_str); axis auto;
         % set(gca, 'LineWidth', line_width, 'FontSize', font_size);
     end
+
+%     % make the right name for plots, Lexie on 02/19/2015
+% ...
+%         index_temp = find(strcmp(varargin, 'sheet_name')) + 1;
+%         plot_title = varargin{1, index_temp};
+%         title_str = plot_title;
+%         title(regexprep(title_str,'_','\\_'));
+% ... 
+%     end % if enable_plot
+
     
     if save_excel_file 
         if ~enable_interp
@@ -211,28 +229,6 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         clear time_ratio_array original_sheet norm_time_ratio_array norm_sheet;        
     end
     
-
-%     % make the right name for plots, Lexie on 02/19/2015
-%     if any(strcmp(varargin, 'sheet_name'))
-%         index_temp = find(strcmp(varargin, 'sheet_name')) + 1;
-%         plot_title = varargin{1, index_temp};
-%     else
-%         plot_title = '';
-%     end; clear intex_temp
-
-
-%     % Make plots of the CFP/FRET and Normalized ECFP/FRET ratios
-%     if enable_plot  && enable_interpolate
-%         title_str = plot_title;
-%         % Plot the Ratio Arrays
-%         h=figure;
-%         plot(time_interp, ratio_array_interp, 'LineWidth', line_width);
-%         my_figure('handle', h, 'line_width', line_width, 'font_size', font_size);
-%         title(regexprep(title_str,'_','\\_'));
-%         xlabel('Time (min)');
-%         ylabel('Intensity Ratio');
-%     end % if enable_plot
-
     % plot the average curve with all data ploted as circles
     if enable_average_plot && enable_interpolate
         % stop_index = find(time_interp == last_time_point);
@@ -241,7 +237,7 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         std_error = std(ratio_array, 0, 2)/sqrt(num_cell);
         h = figure; hold on;
         for i = 1:num_cell 
-            plot(time_array(:), ratio_array(:,i), 'o', 'color', [0.5 0.5 0.5]);
+            plot(original_time_array(:, i), original_ratio_array(:,i), 'o', 'color', [0.5 0.5 0.5]);
         end
             
         % add the error bar
@@ -254,6 +250,8 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         title('Average Plot with Single Cell Data'); axis auto;
         % axis([time_bound, y_limit_before_norm]);
     end % plot the average curve with all original data ploted as circles
+    
+    clear original_time_array original_ratio_array; 
 
 return;
 

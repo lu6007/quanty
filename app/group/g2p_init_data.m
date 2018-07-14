@@ -88,16 +88,18 @@ if ~isempty(group_data)
         save(output_file,'data');
     end
 elseif exist(output_file, 'file') && load_file % group_data is empty
-    disp('g2p_init_data: Update from the data file. ');
+    fprintf('g2p_init_data: Update from the data file. \n');
     res = load(output_file);
     data = res.data;
     if ~strcmp(data.path, p)
+        fprintf('Changing data.path from %s to %s. \n', ...
+            data.path, p);
         data.path = p;
         [~,name, ext] = fileparts(data.first_file);
         data.first_file = strcat(data.path, name, ext);
         data.output_path = strcat(data.path, 'output/');
-        display('Changing data.path'); 
-        display(data.path);
+        fprintf('Save data.mat. \n');
+        save(output_file, 'data');
     end
     
     % make the old and new format compatible, index --> image_index
