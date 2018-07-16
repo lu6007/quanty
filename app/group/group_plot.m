@@ -107,7 +107,9 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
 %                % i_layer is currently the first (outer) layer or the first roi. 
                 exp{1}.cell(j).this_image_index = res.this_image_index;
                 exp{1}.cell(j).time = res.time;
-                exp{1}.cell(j).value = res.ratio{k}(:,i_layer);
+                ratio = res.ratio{k}(:, i_layer);
+                exp{1}.cell(j).value = ratio; 
+                clear ratio; 
             end
 
             clear result_file res name_i data_i si_str loop_index;
@@ -128,17 +130,22 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
 
     my_fun = my_function();
     
-    % Pre-count the total number of cells
-    num_cell_total =0;
-    num_frame = 0;
+    % Pre-count the total number of cells and the max number of frames
+    num_cell_total = 0;
+    num_frame_temp = zeros(num_exp, 1); 
     for i =1:num_exp
         num_cell = length(exp{i}.cell); 
         exp{i}.num_cell = num_cell;
         num_cell_total = num_cell_total+ num_cell;
-        num_frame = max(num_frame, size(exp{i}.cell(1).time,1));
-        num_frame = max(num_frame, size(exp{i}.cell(num_cell).time, 1));
+        temp = zeros(num_cell, 1);
+        for j = 1:num_cell
+            temp(j) = size(exp{i}.cell(j).value, 1);
+        end
+        num_frame_temp(i) = max(temp);
+        clear temp
     end
-
+    num_frame = max(num_frame_temp); clear num_frame_temp;
+    
     % Make plots and possibly export to excel files
     ii = 1;
     time_array = nan(num_frame, num_cell);
@@ -153,6 +160,10 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
             clear time;
        end
     end %for i = 1:num_exp
+    
+%     %%%
+%     time_array = time_array-810; 
+%     %%%
         
     if enable_normalize
         norm_ratio_array = my_fun.normalize_time_value_array(time_array, ratio_array, ...
@@ -171,10 +182,10 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
     % (should not allow this)
     % Extend the ratio values to both sides horizontally 
     if enable_interpolate
-        time_interp = my_fun.get_time_interp(time_array, 'time_bound', time_bound);
-        ratio_array_interp = my_fun.interpolate_time_value_array(time_array, ratio_array, ...
-            time_interp, 'smooth_span', smooth_span);
-        clear time_array; time_array = time_interp; clear time_interp; 
+        [time_array_interp, ratio_array_interp] = ...
+            my_fun.interpolate_time_value_array(time_array, ratio_array, ...
+            'time_bound', time_bound, 'smooth_span', smooth_span);
+        clear time_array; time_array = time_array_interp; clear time_array_interp; 
         clear ratio_array; ratio_array = ratio_array_interp; clear ratio_array_interp;
     end 
         
@@ -231,10 +242,10 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
     
     % plot the average curve with all data ploted as circles
     if enable_average_plot && enable_interpolate
-        % stop_index = find(time_interp == last_time_point);
+        % stop_index = find(time_array_interp == last_time_point);
         num_cell = size(ratio_array, 2);
-        mean_ratio_array = mean(ratio_array, 2);
-        std_error = std(ratio_array, 0, 2)/sqrt(num_cell);
+        mean_ratio_array = mean(ratio_array, 2, 'omitnan');
+        std_error = std(ratio_array, 0, 2 , 'omitnan')/sqrt(num_cell);
         h = figure; hold on;
         for i = 1:num_cell 
             plot(original_time_array(:, i), original_ratio_array(:,i), 'o', 'color', [0.5 0.5 0.5]);
