@@ -91,6 +91,11 @@ elseif exist(output_file, 'file') && load_file % group_data is empty
     fprintf('g2p_init_data: Update from the data file. \n');
     res = load(output_file);
     data = res.data;
+    if isfield(data,'first_cfp_file')
+        data.first_file = data.first_cfp_file;
+        data = rmfield(data,'first_cfp_file');
+    end
+
     if ~strcmp(data.path, p)
         fprintf('Changing data.path from %s to %s. \n', ...
             data.path, p);
@@ -109,17 +114,16 @@ elseif exist(output_file, 'file') && load_file % group_data is empty
         else % copy column vectors
             data.image_index = data.index; 
         end
-        data = rmfield(data,'index');
-        data.index = fluocell_data.index;
+        if isfield(fluocell_data, 'index')
+            data = rmfield(data,'index');
+            data.index = fluocell_data.index;
+        end
     elseif ~isfield(data, 'index')
         data.index = fluocell_data.index;
     end
     if isfield(data,'cfp_channel')
         data = rmfield(data,'cfp_channel');
         data = rmfield(data,'yfp_channel');
-    end
-    if isfield(data,'first_cfp_file')
-        data = rmfield(data,'first_cfp_file');
     end
     % if there is no prefix and postfix, generate them in the group data
     % structure
@@ -139,7 +143,7 @@ elseif exist(output_file, 'file') && load_file % group_data is empty
         data.num_roi = 3;
     end
     % backward compatibility, 6/23/2017 --- Kathy
-    if strcmp(data.protocol, 'FRET') && length(data.f) <3
+    if strcmp(data.protocol, 'FRET') && isfield(data, 'f') && length(data.f) <3
         data.f(3) = figure; 
         disp('Save data file for backward compatibility.');
         save(output_file, 'data');

@@ -93,6 +93,10 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
             res = load(result_file);
             %%%
 
+            if isfield(res, 'fret_ratio') && ~isfield(res, 'ratio')
+                % backward compatible 7/20/2018
+                res.ratio{1} = res.fret_ratio;
+            end
             num_object = length(res.ratio);
             if isempty(select_track) || isempty(select_track{i})
                 loop_index = (1:num_object)';
@@ -224,7 +228,7 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
 
     
     if save_excel_file 
-        if ~enable_interp
+        if ~enable_interpolate
             [num_frame, num_cell] = size(time_array);
             time_ratio_array = nan(num_frame, 2*num_cell);
             time_ratio_array(:, 1:2:2*num_cell-1) = time_array;
