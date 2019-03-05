@@ -1,38 +1,55 @@
 % function group = group_compare( group, varargin )
 % Plot the mean time course of FRET ratio data with standard error bar from different
 % groups together
-% parameter_name = {'excel_file','error_bar_interval',...
-%     'enable_box_plot', 'enable_violin_plot', 'load_file',...
-%     'group_name', 'time_range'};
-% default_value = {'result.xlsx', 5, 0, 0, 0, {'G1', 'G2'}, [10 20]};
+% parameter_name = {'input_file','error_bar_interval',...
+%     'enable_box_plot', 'enable_violin_plot', 'load_file', 'time_range'};
+% default_value = {'result.xlsx', 5, 0, 0, 0, [10 20]};
+%
+% Example: 
+% >> p = '../doc/project/ode_sys/2017/fyn_gf_copy_0125_2016/data_mingxing_0602/06_2015/01-08-2015_Cyto-Fyn_variable_EGF_HeLa/';
+% >> file_name = 'result.xls';
+% >> group = group_compare([], 'input_file', strcat(p, file_name), 'error_bar_interval', 3, 'verbose', 1);
+% 
+% This function visualize the average plots of average time courses with
+% standard error bars. 
+%
+% Next step, please copy the data from group to an excel file
+% and then use python/swarm_plot.py to visualize the swarm plots of data. 
 
 % Copyright: Shaoying Lu, Lexie Qin Qin and Yingxiao Wang 2014-2017 
 % Email: shaoying.lu@gmail.com
 
 function group = group_compare( group, varargin )
-parameter_name = {'excel_file','error_bar_interval',...
-    'enable_box_plot', 'enable_violin_plot', 'load_file',...
-    'group_name', 'time_range'};
-default_value = {'result.xlsx', 5, 0, 0, 0, {'G1', 'G2'}, [10 20]};
-[excel_file, error_bar_interval, enable_box_plot,...
-    enable_violin_plot, load_file, group_name, time_range] = parse_parameter...
+parameter_name = {'input_file','error_bar_interval',...
+    'enable_box_plot', 'enable_violin_plot', 'load_file', 'time_range'};
+default_value = {'result.xlsx', 5, 0, 0, 0, [10 20]};
+[input_file, error_bar_interval, enable_box_plot,...
+    enable_violin_plot, load_file, time_range] = parse_parameter...
     (parameter_name, default_value, varargin);
-excel_file = strcat(group.data.path, '../../',excel_file);
-% DeleteEmptyExcelSheets(excel_file);
 
 font_size = 24;
-line_width = 3;
+line_width = 2;
 
-[~, ~, xls_str] = fileparts(excel_file);
-mat_file = regexprep(excel_file, xls_str, '.mat');
-if ~exist(mat_file, 'file') || ~load_file
-    group = excel_read_curve(excel_file, 'method', 2);
-    save(mat_file, 'group');
-else 
-    input = load(mat_file);
-    group = input.group;
-    clear input;
+if exist(input_file, 'file') && isempty(group)
+    load_file = 1;
+    disp(strcat('group_compare: set load_file = 1')); 
+    disp(strcat('loaded input file: ', input_file)); 
 end
+    
+if load_file    
+    [~, ~, ext_str] = fileparts(input_file);
+    if strcmp(ext_str, '.xls') || strcmp(ext_str, '.xlsx') || strcmp(ext_str, '.cvs')
+        % read excel file        
+        mat_file = regexprep(input_file, ext_str, '.mat');
+        group = excel_read_curve(input_file, 'method', 2);
+        save(mat_file, 'group');
+        fprintf('group_compare: saved mat_file %s\n', mat_file); 
+    else 
+        input = load(input_file);
+        group = input.group;
+        clear input;
+    end
+end % if load_file
 
 % Calculate the average and std_error of ratio values.
 num_group = length(group);
@@ -40,12 +57,15 @@ time = cell(num_group);
 ratio = cell(num_group);
 mean_ratio = cell(num_group);
 std_error = cell(num_group);
+group_name = cell(num_group, 1);
+num_cell = zeros(num_group, 1);
 for i = 1:num_group        
     time{i} = group{i}.time;
     ratio{i} = group{i}.ratio;
-    num_cells = size(ratio{i}, 2);
+    num_cell(i) = size(ratio{i}, 2);
     mean_ratio{i} = mean(ratio{i}, 2);
-    std_error{i} = std(ratio{i},0,2) / sqrt(num_cells);
+    std_error{i} = std(ratio{i},0,2) / sqrt(num_cell(i));
+    group_name{i} = group{i}.name; 
 end % for i
 
 % Lexie on 03/20/2015, extract the time information about how long it will
@@ -63,23 +83,12 @@ clear max_ratio index_peak;
 
 % Make plots
 % Plot the mean ratio with standard error.
-figure('color','w'); hold on;
-set(gca, 'FontSize', 12, 'FontWeight', 'bold','Box', 'off', 'LineWidth',2); 
+my_figure('font_size', font_size, 'line_width', line_width);
 xlabel('Time (min)'); ylabel('Normalized Mean Ratio');
 
-color = {'r', 'b', 'k','g', 'm', 'c', 'y'};
-colorbase = [0.8 0.5 0.2];
-q = 8;
-    for j = 1:2
-        for n = 1:3
-            for h = 2:3
-                color{q} = [colorbase(j) colorbase(n) colorbase(h)];
-                q = q + 1;
-            end
-        end
-    end
-clear q j h n
-% color = lines(30);
+% Use matlab default color
+co = get(groot, 'defaultAxesColorOrder');
+color = {co(1,:), co(2,:), co(3,:), co(4,:), co(5,:), co(6,:), co(7,:), co(1,:)};
 
 fs = font_size;
 lw = line_width; 
@@ -96,7 +105,7 @@ for i = 1:num_group
     clear t1 mr1 index index1;
 end
 
-%add the error bar
+% Add the error bars
 for i = 1:num_group
     add_error_bar(time{i}, mean_ratio{i}, std_error{i}, 'error_bar_color', color{i},...
         'error_bar_interval', error_bar_interval);
@@ -115,9 +124,9 @@ eval(legend_str);
 
 
 % statistics part - t-test, Lexie on 02/23/2015
-stat_data= cell(num_group, 1);
-range_data = cell(num_group, 1);
-test_data = cell(num_group, 1);
+clear ratio; 
+ratio = cell(num_group, 1);
+stat_average_ratio = cell(num_group, 1);
 stat_peak_ratio = cell(num_group, 1);
 group_mean = zeros(num_group, 1);
 sem = zeros(num_group, 1);
@@ -128,37 +137,42 @@ ratio_mean = zeros(num_group, 1);
 sem_ratio = zeros(num_group, 1);
 
 for n = 1 : num_group
-    stat_data{n} = xlsread(excel_file, group_name{n});
-    num_cell = size(stat_data{n}, 2)-1;
-    time = stat_data{n}(:,1); 
-    range_data{n} = stat_data{n}(:, 2:num_cell+1);
-    ii = (time>=time_range(1) & time<=time_range(2));
-    test_data{n} = (mean(range_data{n}(ii, :), 1))';
-    temp = max(range_data{n});
+    time_n = time{n};
+    ratio{n} = group{n}.ratio;
+    ii = (time_n>=time_range(1) & time_n<=time_range(2));
+    stat_average_ratio{n} = (mean(ratio{n}(ii, :), 1))';
+    temp = max(ratio{n});
     stat_peak_ratio{n} = temp';
-    %stat_peak_time{n} = time(jj)';
-    for i = 1:num_cell
-        jj = find(range_data{n}(:,i)>0.99*stat_peak_ratio{n}(i), 1);
-        stat_peak_time{n}(i) = time(jj) ;
+    stat_peak_time{n} = zeros(num_cell(n), 1);
+    for i = 1:num_cell(n)
+        jj = find(ratio{n}(:,i)>0.99*stat_peak_ratio{n}(i), 1);
+        stat_peak_time{n}(i) = time_n(jj) ;
     end
     clear temp jj;
-    group_mean(n) = mean(test_data{n}, 1);
-    sem(n) = std(test_data{n}) / length(test_data{n});
+    group_mean(n) = mean(stat_average_ratio{n}, 1);
+    sem(n) = std(stat_average_ratio{n}) / sqrt(length(stat_average_ratio{n}));
      time_mean(n) = mean(stat_peak_time{n});
-     sem_time(n)  = std(stat_peak_time{n}) / sqrt(num_cell);
+     sem_time(n)  = std(stat_peak_time{n}) / sqrt(num_cell(n));
      ratio_mean(n)  = mean(stat_peak_ratio{n});
-     sem_ratio(n)  = std(stat_peak_ratio{n}) / sqrt(num_cell);
+     sem_ratio(n)  = std(stat_peak_ratio{n}) / sqrt(num_cell(n));
      clear ii;
 end % for n = 1 : length(group_name)
+
+% copy the results to output
+for n = 1:num_group
+    group{n}.peak_ratio = stat_peak_ratio{n}; 
+    group{n}.peak_time = stat_peak_time{n}; 
+    group{n}.average_ratio = stat_average_ratio{n};
+end
 
 % Comparison of the mean ratio between a user specified time range
 title_str = strcat('Time interval [', num2str(time_range),']');
 if enable_box_plot
-    box_plot(test_data, group_name, 'title_string', title_str);
+    box_plot(stat_average_ratio, group_name, 'title_string', title_str);
     ylabel('Intensity Ratio');
 end
 if enable_violin_plot
-    violin_plot(test_data, group_name, 'title_string', title_str,...
+    violin_plot(stat_average_ratio, group_name, 'title_string', title_str,...
         'line_width', lw, 'font_size', fs);
     ylabel('Intensity Ratio');
 end
@@ -166,10 +180,10 @@ clear title_str
 disp(' ');
 disp('Mean Ratio +/- Standard Error');
 for n = 1 : length(group_name)
-    display(['For group ', group_name{n}, ' (n=', num2str(length(test_data{n})), '), ',...
+    display(['For group ', group_name{n}, ' (n=', num2str(length(stat_average_ratio{n})), '), ',...
         num2str(group_mean(n)), ' +/- ', num2str(sem(n))]);
 end 
-[h, p, ~, ~] = ttest2(test_data{1}, test_data{2});
+[h, p, ~, ~] = ttest2(stat_average_ratio{1}, stat_average_ratio{2});
 if h == 1
     disp(['There is significant difference between ',group_name{1},...
         ' and ', group_name{2}, '.']);
@@ -207,7 +221,7 @@ end
 disp(['The p value is ', num2str(p_peak_time), '.']);
 disp(' ');
 
-
+% Comparison of peak ratio
 title_str = 'Peak Ratio';
 if enable_box_plot
     box_plot(stat_peak_ratio, group_name, 'title_string', title_str);
@@ -234,6 +248,8 @@ end
 disp(['The p value is ', num2str(p_peak_ratio), '.']);
 disp(' '); 
 
+fprintf('Output: group, disp(group{1})\n'); 
+disp(group{1}); 
 return;
 
 

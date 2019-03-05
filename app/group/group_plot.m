@@ -10,7 +10,7 @@
 %
 % Example:
 % For method = 1 , load data from fluocell_data
-% and load the compute_time_course result.mat
+% and load the output from compute_time_course(), result.mat
 % >> group.name = 'p1';
 % >> group.data = data;
 % >> group_plot(group, 'method', 1);
@@ -29,7 +29,10 @@
 % >> group.file = strcat(p, 'Quantification_02-26-2014');
 % >> group.index = 1;
 % >> group_plot(group, 'method', 2);
-% The excel file has the format "time, ratio, time, ratio, ..., ratio'
+% The excel file has the format "time, ratio, time, ratio, ..., time, ratio"
+% If the excel file has the format "time, ratio, ratio, ..., ratio", use
+% the functions excel_read_curve() for a single group or the group_compare() 
+% for multiple groups. 
 %
 % For select_track, it is used to select good tracks from the quantified time
 % cousrse. select_track is a cell with the same number of entries as the
@@ -39,8 +42,9 @@
 % >> select_track = {[2], [1;2], [1;3]};
 % >> group_plot(group, 'method', 1, 'enable_normalize', 1, 'save_excel_file', 1, ...
 %  'sheet_name', 'ratio', 'select_track', select_track);
+%
 
-% Copyright: Shaoying Lu and Yingxiao Wang 2013-2017 
+% Copyright: Shaoying Lu and Yingxiao Wang 2013-current
 % Email: shaoying.lu@gmail.com
 
 function [time_array, ratio_array, group_name] = group_plot( group, varargin )
@@ -62,7 +66,7 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
     if method ==1 
         group_name = group.name;
         fprintf('Group Name : %s\n', group_name);
-     elseif method ==2  
+     elseif method ==2  || method == 3
         file_name = group.file;
         group_index = group.index;
     end
@@ -120,7 +124,7 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         end % for i 
       
     elseif method ==2 % read the time and ratio values from the excel file
-        old_exp = excel_read_curve(file_name);
+        old_exp = excel_read_curve(file_name, 'method', 1, 'verbose', 1);
         num_exp = length(group_index);
         exp = cell(num_exp, 1);
         ii = 1;
@@ -130,7 +134,11 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         end
         group_name = exp{1}.name;   
         clear old_exp;
-    end % if method == 1 || method ==3
+    elseif method == 3 % read the time and ratio values from the excel file
+        exp = excel_read_curve(file_name, 'method', 2, 'verbose', 1);
+        num_exp = length(exp);
+        group_name = exp{1}.name;
+    end % if method == 1, 2 or 3
 
     my_fun = my_function();
     
@@ -149,7 +157,7 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         clear temp
     end
     num_frame = max(num_frame_temp); clear num_frame_temp;
-    
+
     % Make plots and possibly export to excel files
     ii = 1;
     time_array = nan(num_frame, num_cell);
@@ -164,7 +172,7 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
             clear time;
        end
     end %for i = 1:num_exp
-    
+         
 %     %%%
 %     time_array = time_array-810; 
 %     %%%

@@ -1,3 +1,19 @@
+% function my = my_function()
+%     % Change the following line to the location of your quanty_dataset_2.
+%     % Close the folder name with '/'
+%     my.root = '/Users/kathylu/Documents/sof/data/quanty_dataset_2/';
+%     my.pause = @my_pause;
+%     my.dir = @my_dir;
+%     %
+%     my.get_value_before = @get_value_before;
+%     my.get_time_interp = @get_time_interp;
+%     my.normalize_time_value_array = @normalize_time_value_array;
+%     my.interpolate_time_value_array = @interpolate_time_value_array;
+%     my.statistic_test = @statistic_test;
+%     my.multiple_compare = @multiple_compare; 
+%     my.get_derivative = @get_derivative;
+%     my.get_area_ratio = @get_area_ratio;
+% return
 function my = my_function()
     % Change the following line to the location of your quanty_dataset_2.
     % Close the folder name with '/'
@@ -10,6 +26,7 @@ function my = my_function()
     my.normalize_time_value_array = @normalize_time_value_array;
     my.interpolate_time_value_array = @interpolate_time_value_array;
     my.statistic_test = @statistic_test;
+    my.multiple_compare = @multiple_compare; 
     my.get_derivative = @get_derivative;
     my.get_area_ratio = @get_area_ratio;
 return
@@ -153,6 +170,35 @@ fprintf('n1 = %d, mean-SEM: %f +/- %f; \n', stat.x.size, stat.x.average, stat.x.
 fprintf('n2 = %d, mean-SEM: %f +/- %f. \n\n', stat.y.size, stat.y.average, stat.y.standard_error);
 return
 
+% function mutiple_compare(data, tag)
+% This function can be directly called from command line. 
+%
+% Input: data is a cell of column vectors including the data values.
+%        tag is a cell of strings containg the name of each data component.
+%        The length of data should be the same as the length of tag. 
+% 
+% Example: 
+% >> fi = cell(4,1);
+% Next copy data from an excel file to fi in the workspace
+% >> tag = {'NR', 'NR+GEM', 'R100', 'R100+GEM'};
+% >> my_func = my_function()
+% >> my_func.multiple_compare(fi, tag);
+%
+% This funciton uses the Bonferroni multiple comparison test of means at 
+% 95% confidence interval, which is provided by the multcompare function in the
+% MATLAB statistics toolbox (The MathWorks, Natick, MA).
+function multiple_compare(data, tag)
+    n = length(data);
+    data_tag = cell(n, 1);
+    new_tag = pad(tag);
+    for i = 1:n
+        data_tag{i} = get_tag(data{i}, new_tag{i});
+    end
+    data_vec = cat(1, data{:}); clear data;
+    tag_vec = cat(1, data_tag{:}); clear tag; 
+    multiple_comparison(data_vec, tag_vec);
+return
+
 % function [max_deriv, max_i, min_deriv, min_i] = get_derivative(t, y)
 function [max_deriv, max_i, min_deriv, min_i] = get_derivative(t, y)
 first_deriv = gradient(y, t).*(t>0); %??? 
@@ -173,9 +219,22 @@ return
 
 % function area_ratio = get_area_ratio(t, y)
 % Area ratio is a measure of transient index
-function area_ratio = get_area_ratio(t, y)
-time_th = 15; % min
-time_span = 15; % min
+% This is also area under curve (AUC) normalized by peak values and time
+% span used for calculation. 
+%
+% The normalized AUC is calculated my_function.get_area_ratio
+% with the input of "time" and "normalized_ratio-1" from single cells. 
+% Its values represent the stability of the time courses. 
+% normal_auc = 0.5 indicates linear decrease to the basal level from peak within 15 min.
+% normal_auc = 1.0 indicates stable signals after reaching peak.
+% The values can also be NaN or negative: (1) normal_auc = NaN : the time course 
+% did not reach peak before time_th (min); (2) normal_auc < 0 : the time courese quickly decreased to less than 0 before
+% time_span (min). 
+function area_ratio = get_area_ratio(t, y, varargin)
+
+parameter_name = {'time_threshold', 'time_span'};
+default_value = {15, 15}; % unit: {min, min} 
+[time_th, time_span] = parse_parameter(parameter_name, default_value, varargin);
 max_y_95 = prctile(y, 95, 1);
 max_i_95 = find(y>=max_y_95, 1);
 if t(max_i_95)>=time_th
@@ -185,5 +244,5 @@ end
 t95 = t(max_i_95);
 index = (t>=t95)&(t<=t95+time_span);
 area_curve = trapz(t(index), y(index));
-area_ratio = area_curve/max_y_95*time_span;
+area_ratio = area_curve/max_y_95/time_span;
 return

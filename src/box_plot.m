@@ -17,7 +17,7 @@ for n = 1 : length(data)
     box_plot_str = [box_plot_str, 'data{', num2str(n), '}; '];
 end
 temp2 = size(data{1});
-if temp2(2) ~= 1,
+if temp2(2) ~= 1
     for n = 1 : length(data)
         temp3{n} = data{n}';
     end
@@ -26,8 +26,8 @@ if temp2(2) ~= 1,
 end
 box_plot_str = box_plot_str(1 : end - 2);
 box_plot_str = [box_plot_str, '], formatted_matrix);'];
-% box_plot_str = [box_plot_str, '], formatted_matrix, ''LineWidths'', 1.5);'];
 figure;
+% boxplot([data{1}; data{2}], formatted_matrix);
 eval(box_plot_str)
 title(title_string);
 set(gca,'FontSize', 12, 'FontName','Arial', 'Fontweight', 'bold', 'LineWidth', 1.5);
