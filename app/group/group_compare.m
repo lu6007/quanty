@@ -107,6 +107,10 @@ end
 
 % Add the error bars
 for i = 1:num_group
+    iii = (find(~diff(time{i})))'; 
+    assert(isempty(iii), ...
+        [ 'group_compare(): i=', num2str(i), ', ', ...
+        'the time vector has duplicated values at ', num2str(iii)]); 
     add_error_bar(time{i}, mean_ratio{i}, std_error{i}, 'error_bar_color', color{i},...
         'error_bar_interval', error_bar_interval);
 end

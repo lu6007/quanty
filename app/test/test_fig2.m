@@ -26,13 +26,13 @@ data = batch_update_figure(data);
 time_manual = data.time(1:25, 2);
 time = time_manual - time_manual(1); 
 ratio_manual = data.ratio{1}(1:25, 1);
-%
+% 
 iii = (time<=10);
 ecfp = data.channel1{1};
 fret = data.channel2{1};
 fs = 24; lw =3;
 my_figure('font_size', fs, 'line_width', lw); hold on;
-plot(time(iii), [ecfp(jjj)/ecfp(1), fret(jjj)/fret(1), ratio_manual(jjj)/ratio_manual(1)], ...
+plot(time(iii), [ecfp(iii)/ecfp(1), fret(iii)/fret(1), ratio_manual(iii)/ratio_manual(1)], ...
     'LineWidth', lw);
 axis([0 10 0.9 1.1]); 
 xlabel('Time (min)');
