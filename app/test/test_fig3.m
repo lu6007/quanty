@@ -23,16 +23,15 @@ data.brightness_factor = 0.7;
 data.intensity_bound = [];
 data.quantify_roi = 3;
 data.num_roi = 3; 
-save(data_file, 'data');
-group = g2p_init_data(data, 'load_file', 1);
-g2p_quantify(group, 'show_figure', 1, 'load_file', 0, 'save_file', 1);
+save(data_file, 'data'); 
+group = g2p_init_data(data, 'load_file', 1); 
+g2p_quantify(group, 'show_figure', 1, 'load_file', 0, 'save_file', 1); 
 pause_str = 'Press any key to close current figures and continue.';
 my.pause(enable_pause, pause_str);
 close all;
 group_image_view(group, 'time_point', [1; 25; 50]);
 group_plot(group,'method',1);
 my.pause(enable_pause, pause_str);
-
 
 %% Figs 2B, 2C, S4
 close all;

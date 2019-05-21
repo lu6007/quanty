@@ -8,16 +8,13 @@ end
 fprintf('test_flucell: enable_pause = %d\n', enable_pause);
 
 %% 
-test_fig2
+test_fig2 % some warnings
 
 %%
-test_fig3
+test_fig3 % some warnings
 
 %%
 test_fig4
 
 %%
 test_fig5
-
-%%
-% test_group_plot

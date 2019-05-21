@@ -47,7 +47,7 @@ if ~exist(out_file,'file') || load_file ==0
     data.show_figure = 0;
     data.save_processed_image = 0;
     data = batch_update_figure(data);
-    % run another time to show tracks
+    % run another time to compute and show tracks
     data.show_figure = show_figure;
     data.save_processed_image = save_processed_image;
     data = batch_update_figure(data);
