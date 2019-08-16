@@ -1,7 +1,11 @@
 % test_group_plot_0902_2017.m
 
 %% Initialize
-p = '/Volumes/KathyWD2TB/data/2017/rongxue_0814/0901_excel_file/0902/';
+my = my_function();
+root = my.root;
+display(strcat('The root data folder is: ', root));
+    
+p = strcat(root, '../quanty_sample/0902/');
 result_file = strcat(p, 'result.mat');
 my_fun = my_function();
 

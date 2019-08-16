@@ -124,7 +124,8 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         end % for i 
       
     elseif method ==2 % read the time and ratio values from the excel file
-        old_exp = excel_read_curve(file_name, 'method', 1, 'verbose', 1);
+        old_exp = excel_read_curve(file_name, 'method', 1, 'verbose', 1, ...
+            'sheet_name', sheet_name);
         num_exp = length(group_index);
         exp = cell(num_exp, 1);
         ii = 1;
@@ -135,7 +136,8 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
         group_name = exp{1}.name;   
         clear old_exp;
     elseif method == 3 % read the time and ratio values from the excel file
-        exp = excel_read_curve(file_name, 'method', 2, 'verbose', 1);
+        exp = excel_read_curve(file_name, 'method', 2, 'verbose', 1, ...
+            'sheet_name', sheet_name);
         num_exp = length(exp);
         group_name = exp{1}.name;
     end % if method == 1, 2 or 3
@@ -193,9 +195,9 @@ function [time_array, ratio_array, group_name] = group_plot( group, varargin )
     % (should not allow this)
     % Extend the ratio values to both sides horizontally 
     if enable_interpolate
-        time_array_interp = my_fun.get_time_interp(time_array);
-        ratio_array_interp = my_fun.interpolate_time_value_array(time_array, ratio_array, ...
-            time_array_interp);
+        % time_array_interp = my_fun.get_time_interp(time_array);
+        [time_array_interp, ratio_array_interp] = ...
+            my_fun.interpolate_time_value_array(time_array, ratio_array);
         clear time_array; time_array = time_array_interp; clear time_array_interp; 
         clear ratio_array; ratio_array = ratio_array_interp; clear ratio_array_interp;
     end 

@@ -18,3 +18,6 @@ test_fig4
 
 %%
 test_fig5
+
+%%
+test_group_plot 
