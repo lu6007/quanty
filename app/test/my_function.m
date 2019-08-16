@@ -1,5 +1,5 @@
 % function my = my_function()
-%     % Change the following line to the location of your quanty_dataset_2.
+%     % Change the following line to the location of your data.
 %     % Close the folder name with '/'
 %     my.root = '/Users/kathylu/Documents/sof/data/quanty_dataset_2/';
 %     my.pause = @my_pause;
@@ -9,13 +9,16 @@
 %     my.get_time_interp = @get_time_interp;
 %     my.normalize_time_value_array = @normalize_time_value_array;
 %     my.interpolate_time_value_array = @interpolate_time_value_array;
+%     %
 %     my.statistic_test = @statistic_test;
 %     my.multiple_compare = @multiple_compare; 
 %     my.get_derivative = @get_derivative;
 %     my.get_area_ratio = @get_area_ratio;
 % return
+
+% Copyright: Shaoying Lu, email: shaoying.lu@gmail.com 
 function my = my_function()
-    % Change the following line to the location of your quanty_dataset_2.
+    % Change the following line to the location of your data.
     % Close the folder name with '/'
     my.root = '/Users/kathylu/Documents/sof/data/quanty_dataset_2/';
     my.pause = @my_pause;
@@ -25,6 +28,7 @@ function my = my_function()
     my.get_time_interp = @get_time_interp;
     my.normalize_time_value_array = @normalize_time_value_array;
     my.interpolate_time_value_array = @interpolate_time_value_array;
+    %
     my.statistic_test = @statistic_test;
     my.multiple_compare = @multiple_compare; 
     my.get_derivative = @get_derivative;
@@ -72,9 +76,22 @@ function value_before = get_value_before(time, value)
     before_index = (time>=-15) & (time<=0); 
     value_before = nanmean(value(before_index))';
     if isnan(value_before) 
-        % find the first non-nan value and use that to normalize
+        % find the first non-nan value 
        ii = find(~isnan(value),1); 
        value_before = value(ii);
+    end
+return
+
+% function norm_ratio_array = normalize_time_value_array(time_array, ratio_array )
+% Calculated normalized ratio array
+function norm_value_array = normalize_time_value_array(time_array, value_array)
+    [num_frame, num_cell] = size(time_array);
+    norm_value_array = nan(num_frame, num_cell);
+    for j = 1:num_cell
+        value = value_array(:,j);
+        value_before = get_value_before(time_array(:,j), value);
+        norm_value_array(:,j) = value/value_before;
+        clear value;
     end
 return
 
@@ -106,31 +123,24 @@ function time_interp = get_time_interp(time_array, varargin)
     time_interp = [time_bound(1):0.5:0, 0.1:0.1:10, 10.5:0.5:time_bound(2)]';
 return
 
-% function norm_ratio_array = normalize_time_value_array(time_array, ratio_array )
-% Calculated normalized ratio array
-function norm_value_array = normalize_time_value_array(time_array, value_array)
-    [num_frame, num_cell] = size(time_array);
-    norm_value_array = nan(num_frame, num_cell);
-    for j = 1:num_cell
-        value = value_array(:,j);
-        value_before = get_value_before(time_array(:,j), value);
-        norm_value_array(:,j) = value/value_before;
-        clear value;
-    end
-return
-
 % function interp_value_array = interpolate_time_value_array(time_array, value_array,...
 %    time_interp)
 % Calculate interpolation of arrays
-function interp_value_array = interpolate_time_value_array(time_array, value_array,...
-    time_interp)
-    num_time = size(time_interp, 1);
-    num_cell = size(value_array, 2);
-    interp_value_array = nan(num_time, num_cell);
-    for j = 1:num_cell
-        interp_value_array(:, j) = my_interp(time_array(:,j),value_array(:, j), ...
-            time_interp, 'smooth_span', 9);
-    end 
+function [time_array_interp, interp_value_array] = ...
+    interpolate_time_value_array(time_array, value_array, varargin)
+    para_name = {'smooth_span', 'time_bound'};
+    default_value = {9, []};
+    [smooth_span, time_bound] = ... 
+        parse_parameter(para_name, default_value, varargin);
+
+        time_array_interp = get_time_interp(time_array, 'time_bound', time_bound);
+        num_time = size(time_array_interp, 1);
+        num_cell = size(value_array, 2);
+        interp_value_array = nan(num_time, num_cell);
+        for j = 1:num_cell
+            interp_value_array(:, j) = my_interp(time_array(:,j),value_array(:, j), ...
+                time_array_interp, 'smooth_span', smooth_span);
+        end 
 return;
 
 % function p = statistic_test(x, y, varargin)
@@ -233,6 +243,9 @@ return
 % The values can also be NaN or negative: (1) normal_auc = NaN : the time course 
 % did not reach peak before time_th (min); (2) normal_auc < 0 : the time courese quickly decreased to less than 0 before
 % time_span (min). 
+%
+% function area_ratio = get_area_ratio(t, y)
+% Area ratio is a measure of transient index
 function area_ratio = get_area_ratio(t, y, varargin)
 parameter_name = {'time_threshold', 'time_span'};
 default_value = {15, 15}; % unit: {min, min} 
