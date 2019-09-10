@@ -11,7 +11,12 @@ fprintf('test_fig2: enable_pause = %d\n', enable_pause);
 pause_str = 'Press any key to close current figures and continue.';
 my = my_function();
 root = my.root;
-display(strcat('The root data folder is: ', root));
+fprintf('test_fig2: root = %s\n', root);
+if ~exist(root, 'dir')
+    fprintf('test_fig2: Error!!! root does not exist. \n');
+    fprintf('Please edit fluocell/utility/my_function.m , \n');
+    fprintf('And set the root variable to quanty data folder.\n');
+end
 
 enable_time = 1;
 if enable_time, tic; end
